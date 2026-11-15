@@ -71,11 +71,11 @@
     <div class="flex items-center gap-3 text-xs">
       <div class="bg-black/60 border border-slate-700/80 rounded-xl px-3 py-1.5 font-mono flex items-center gap-2">
         <span class="text-slate-400">Position:</span>
-        <span id="ninjaPosDisplay" class="font-bold text-amber-400">X: 340, Y: 350</span>
+        <span id="ninjaPosDisplay" class="font-bold text-amber-400">X: 280, Y: 482</span>
       </div>
       <div class="bg-black/60 border border-slate-700/80 rounded-xl px-3 py-1.5 font-mono flex items-center gap-2">
         <span class="text-slate-400">Status:</span>
-        <span id="groundedDisplay" class="font-bold text-emerald-400">Grounded (Flush Y=350)</span>
+        <span id="groundedDisplay" class="font-bold text-emerald-400">Grounded (Flush Y=482)</span>
       </div>
     </div>
 
@@ -160,6 +160,8 @@
 
     const VIRTUAL_W = 1024;
     const VIRTUAL_H = 576;
+    const FLOOR_Y = 482; // Verified bottom ground line across stages
+    const GROUND_CONTACT_TOLERANCE = 6.0; // Contact tolerance in pixels for grounded rest state
 
     let debugHitboxes = true;
     let currentAct = 1;
@@ -185,9 +187,10 @@
       1: {
         title: 'Dawn Village • Daytime Torii Shrine Path',
         plateImg: actPlates[1],
-        floorY: 350,
-        spawn: { x: 340, y: 350 - 52 },
+        floorY: 482,
+        spawn: { x: 280, y: 482 - 52 },
         platforms: [
+          { x: 0, y: 482, w: 1024, h: 94, isOneWay: false, name: 'Ground Baseline' },
           { x: 0, y: 350, w: 455, h: 226, isOneWay: false, name: 'Left Mountain Bluff' },
           { x: 585, y: 350, w: 439, h: 226, isOneWay: false, name: 'Right Mountain Bluff' },
           { x: 0, y: 265, w: 140, h: 20, isOneWay: false, name: 'Left Shrine Terrace Porch' },
@@ -330,6 +333,71 @@
       player.vy = 0;
       player.isOnGround = true;
       player.isDropping = false;
+      updateDiagnostics();
+    }
+
+    // Ground contact evaluation with tolerance
+    function isWithinGroundContactTolerance(pX, pY, pW, pH, vy) {
+      if (Math.abs(vy) > 0.05) return false;
+
+      const feetY = pY + pH;
+      const targetGround = activeWorld.floorY || FLOOR_Y;
+
+      // 1. Verified bottom ground baseline
+      if (Math.abs(feetY - targetGround) <= GROUND_CONTACT_TOLERANCE) {
+        return true;
+      }
+
+      // 2. Flat platforms
+      for (const p of platforms) {
+        const inX = (pX + pW > p.x + 2) && (pX < p.x + p.w - 2);
+        if (inX && Math.abs(feetY - p.y) <= GROUND_CONTACT_TOLERANCE) {
+          return true;
+        }
+      }
+
+      // 3. Slopes
+      for (const s of slopes) {
+        const minX = Math.min(s.startX, s.endX);
+        const maxX = Math.max(s.startX, s.endX);
+        const midX = pX + pW / 2;
+        if (midX >= minX && midX <= maxX) {
+          const t = (midX - s.startX) / (s.endX - s.startX);
+          const rampY = s.startY + t * (s.endY - s.startY);
+          if (Math.abs(feetY - rampY) <= GROUND_CONTACT_TOLERANCE + 2) {
+            return true;
+          }
+        }
+      }
+
+      return false;
+    }
+
+    function updateDiagnostics() {
+      const currentFeetY = Math.round(player.y + player.h);
+      const inTolerance = isWithinGroundContactTolerance(player.x, player.y, player.w, player.h, player.vy);
+      const isGrounded = player.isOnGround || inTolerance;
+
+      if (inTolerance && Math.abs(player.vy) <= 0.05) {
+        player.isOnGround = true;
+        player.vy = 0;
+      }
+
+      const groundBaseline = activeWorld.floorY || FLOOR_Y;
+      const flushLabel = (currentFeetY === groundBaseline) ? `Flush Y=${currentFeetY}` : `Y=${currentFeetY}`;
+
+      const posElem = document.getElementById('ninjaPosDisplay');
+      const statusElem = document.getElementById('groundedDisplay');
+
+      if (posElem) posElem.textContent = `X: ${Math.round(player.x)}, Y: ${currentFeetY}`;
+      if (statusElem) {
+        statusElem.textContent = isGrounded
+          ? `Grounded (${flushLabel})`
+          : `Airborne (Vy: ${player.vy.toFixed(0)})`;
+        statusElem.className = isGrounded
+          ? 'font-bold text-emerald-400'
+          : 'font-bold text-amber-400';
+      }
     }
 
     function toggleHitboxes() {
@@ -456,9 +524,19 @@
         if (player.attackTimer <= 0) player.isAttacking = false;
       }
 
+      // Pre-gravity grounded evaluation:
+      // If player feet are within ground-contact tolerance and vertical velocity is zero (not jumping/dropping),
+      // keep player solidly grounded so gravity does not falsely initiate an airborne state.
+      if (!player.isDropping && Math.abs(player.vy) <= 0.05 && isWithinGroundContactTolerance(player.x, player.y, player.w, player.h, player.vy)) {
+        player.isOnGround = true;
+        player.vy = 0;
+      }
+
       // Gravity
       if (!player.isOnGround) {
         player.vy += player.gravity * dt;
+      } else {
+        player.vy = 0;
       }
 
       // Integrate Position
@@ -483,7 +561,7 @@
           const rampY = slope.startY + t * (slope.endY - slope.startY);
 
           if (player.vy >= 0 && !player.isDropping) {
-            if (feetY >= rampY - 14 && feetY <= rampY + 16) {
+            if (feetY >= rampY - (GROUND_CONTACT_TOLERANCE + 4) && feetY <= rampY + 16) {
               player.y = rampY - player.h;
               player.vy = 0;
               onSurface = true;
@@ -500,15 +578,15 @@
           if (!inX) continue;
 
           if (p.isOneWay) {
-            if (player.vy >= 0 && !player.isDropping && feetY >= p.y - 6 && feetY <= p.y + 16) {
+            if (player.vy >= 0 && !player.isDropping && feetY >= p.y - GROUND_CONTACT_TOLERANCE && feetY <= p.y + 16) {
               player.y = p.y - player.h;
               player.vy = 0;
               onSurface = true;
               break;
             }
           } else {
-            // Solid ground baseline (Y = FLOOR_Y)
-            if (player.vy >= 0 && feetY >= p.y - 6 && feetY <= p.y + 18) {
+            // Solid ground platform
+            if (player.vy >= 0 && feetY >= p.y - GROUND_CONTACT_TOLERANCE && feetY <= p.y + 18) {
               player.y = p.y - player.h;
               player.vy = 0;
               onSurface = true;
@@ -518,12 +596,27 @@
         }
       }
 
+      // 3. Fallback Solid ground baseline (Y = FLOOR_Y or activeWorld.floorY)
+      const currentFloorY = activeWorld.floorY || FLOOR_Y;
+      if (!onSurface && currentFloorY && player.vy >= 0 && !player.isDropping) {
+        if (feetY >= currentFloorY - GROUND_CONTACT_TOLERANCE && feetY <= currentFloorY + 18) {
+          player.y = currentFloorY - player.h;
+          player.vy = 0;
+          onSurface = true;
+        }
+      }
+
       // Pit Fall Safeguard
       if (player.y > VIRTUAL_H + 40) {
         resetNinja();
       }
 
-      player.isOnGround = onSurface;
+      // Grounded state update
+      const groundedByTolerance = (Math.abs(player.vy) <= 0.05) && isWithinGroundContactTolerance(player.x, player.y, player.w, player.h, player.vy);
+      player.isOnGround = onSurface || groundedByTolerance;
+      if (player.isOnGround && player.vy > 0) {
+        player.vy = 0;
+      }
 
       // Orbs Collection
       let collectedCount = 0;
@@ -552,12 +645,8 @@
       });
       slashParticles = slashParticles.filter(p => p.life > 0);
 
-      // Update Diagnostics
-      const currentFeetY = (player.y + player.h).toFixed(0);
-      document.getElementById('ninjaPosDisplay').textContent = `X: ${player.x.toFixed(0)}, Y: ${currentFeetY}`;
-      document.getElementById('groundedDisplay').textContent = player.isOnGround
-        ? `Grounded (${currentFeetY === '482' ? 'Flush Y=482' : `Y=${currentFeetY}`})`
-        : `Airborne (Vy: ${player.vy.toFixed(0)})`;
+      // Update Diagnostics & HUD
+      updateDiagnostics();
 
       // ---------------- RENDER ----------------
       ctx.clearRect(0, 0, VIRTUAL_W, VIRTUAL_H);
@@ -603,8 +692,9 @@
         ctx.strokeStyle = '#22c55e';
         ctx.lineWidth = 2;
         ctx.beginPath();
-        ctx.moveTo(0, FLOOR_Y);
-        ctx.lineTo(VIRTUAL_W, FLOOR_Y);
+        const activeFloorY = activeWorld.floorY || FLOOR_Y;
+        ctx.moveTo(0, activeFloorY);
+        ctx.lineTo(VIRTUAL_W, activeFloorY);
         ctx.stroke();
       }
 
@@ -693,6 +783,21 @@
 
       requestAnimationFrame(gameLoop);
     }
+
+    // Initialize diagnostics immediately for crisp zero-frame grounded readout
+    updateDiagnostics();
+
+    // Expose simulation interface for automated testing and inspection
+    window.ShinobiSimulator = {
+      player,
+      activeWorld,
+      FLOOR_Y,
+      GROUND_CONTACT_TOLERANCE,
+      isWithinGroundContactTolerance,
+      updateDiagnostics,
+      resetNinja,
+      switchAct
+    };
 
     requestAnimationFrame(gameLoop);
   </script>

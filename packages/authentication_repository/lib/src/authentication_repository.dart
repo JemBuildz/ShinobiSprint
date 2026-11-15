@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:authentication_repository/authentication_repository.dart';
 import 'package:firebase_auth/firebase_auth.dart' as fb;
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
 /// {@template authentication_exception}
 /// Exception thrown when an authentication process fails.
@@ -66,6 +68,90 @@ class AuthenticationRepository {
     try {
       final userCredential = await _firebaseAuth.signInAnonymously();
       _userController.add(userCredential.toUser);
+    } on Exception catch (error, stackTrace) {
+      throw AuthenticationException(error, stackTrace);
+    }
+  }
+
+  /// Sign in the user with Google.
+  ///
+  /// If the sign in fails or is cancelled, an [AuthenticationException] is thrown.
+  Future<void> signInWithGoogle({GoogleSignIn? googleSignIn}) async {
+    try {
+      final googleSignInInstance = googleSignIn ?? GoogleSignIn();
+      final googleUser = await googleSignInInstance.signIn();
+      if (googleUser == null) {
+        throw const AuthenticationException(
+          'Google sign-in was cancelled by the user.',
+          StackTrace.empty,
+        );
+      }
+      final googleAuth = await googleUser.authentication;
+      final credential = fb.GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+      final userCredential =
+          await _firebaseAuth.signInWithCredential(credential);
+      _userController.add(userCredential.toUser);
+    } on Exception catch (error, stackTrace) {
+      throw AuthenticationException(error, stackTrace);
+    }
+  }
+
+  /// Sign in the user with Apple.
+  ///
+  /// If the sign in fails or is cancelled, an [AuthenticationException] is thrown.
+  Future<void> signInWithApple({
+    Future<fb.UserCredential> Function()? customAppleSignIn,
+  }) async {
+    try {
+      if (customAppleSignIn != null) {
+        final userCredential = await customAppleSignIn();
+        _userController.add(userCredential.toUser);
+        return;
+      }
+      final appleCredential = await SignInWithApple.getAppleIDCredential(
+        scopes: [
+          AppleIDAuthorizationScopes.email,
+          AppleIDAuthorizationScopes.fullName,
+        ],
+      );
+      final oauthCredential = fb.OAuthProvider('apple.com').credential(
+        idToken: appleCredential.identityToken,
+        accessToken: appleCredential.authorizationCode,
+      );
+      final userCredential =
+          await _firebaseAuth.signInWithCredential(oauthCredential);
+      _userController.add(userCredential.toUser);
+    } on Exception catch (error, stackTrace) {
+      throw AuthenticationException(error, stackTrace);
+    }
+  }
+
+  /// Sign in the user with email and password.
+  ///
+  /// If the sign in fails, an [AuthenticationException] is thrown.
+  Future<void> signInWithEmailAndPassword({
+    required String email,
+    required String password,
+  }) async {
+    try {
+      final userCredential = await _firebaseAuth.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+      _userController.add(userCredential.toUser);
+    } on Exception catch (error, stackTrace) {
+      throw AuthenticationException(error, stackTrace);
+    }
+  }
+
+  /// Signs out the current user.
+  Future<void> signOut() async {
+    try {
+      await _firebaseAuth.signOut();
+      _userController.add(User.unauthenticated);
     } on Exception catch (error, stackTrace) {
       throw AuthenticationException(error, stackTrace);
     }

@@ -1,0 +1,98 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: leaderboard
+    // Document ID: {entryId} (auto-generated)
+    // Fields:
+    //   - playerInitials: string (required, exactly 3 characters, non-empty) - 3-character player initials
+    //   - score: int (required, integer >= 0 and <= 10000000) - Player game score
+    //   - userId: string (optional, must match request.auth.uid) - Firebase Auth UID of the player
+    //   - createdAt: timestamp (optional, must be a timestamp <= request.time) - Timestamp when score was recorded
+    //
+    // ===============================================================
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+
+    // Check if the user is authenticated (including anonymous auth)
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Validate that required fields exist in request payload
+    function hasRequiredFields(fields) {
+      return request.resource.data.keys().hasAll(fields);
+    }
+
+    // Validate that payload contains only allowed fields (prevents schema pollution)
+    function hasOnlyAllowedFields(fields) {
+      return request.resource.data.keys().hasOnly(fields);
+    }
+
+    // Validate player initials: string, exactly 3 characters, non-empty
+    function isValidPlayerInitials(initials) {
+      return initials is string &&
+             initials.size() == 3;
+    }
+
+    // Validate score: non-negative integer within reasonable gameplay bounds
+    function isValidScore(score) {
+      return score is int &&
+             score >= 0 &&
+             score <= 10000000;
+    }
+
+    // Validate optional userId: if present, must match caller's auth UID
+    function isValidUserId(data) {
+      return !('userId' in data) ||
+             (data.userId is string && data.userId == request.auth.uid);
+    }
+
+    // Validate optional createdAt: if present, must be a valid timestamp not in the future
+    function isValidCreatedAt(data) {
+      return !('createdAt' in data) ||
+             (data.createdAt is timestamp && data.createdAt <= request.time);
+    }
+
+    // Domain Validator for leaderboard entries
+    function isValidLeaderboardEntry(data) {
+      return hasRequiredFields(['playerInitials', 'score']) &&
+             hasOnlyAllowedFields(['playerInitials', 'score', 'userId', 'createdAt']) &&
+             isValidPlayerInitials(data.playerInitials) &&
+             isValidScore(data.score) &&
+             isValidUserId(data) &&
+             isValidCreatedAt(data);
+    }
+
+    // ===============================================================
+    // Collection Rules
+    // ===============================================================
+
+    // Leaderboard collection: stores high scores
+    match /leaderboard/{entryId} {
+      // Public read: allows all users (including guests/anonymous) to view the leaderboard
+      allow read: if true;
+
+      // Authenticated create: players (including anonymous) can submit valid scores
+      allow create: if isAuthenticated() && isValidLeaderboardEntry(request.resource.data);
+
+      // Disallow client updates: scores cannot be modified once submitted
+      allow update: if false;
+
+      // Disallow client deletes: pruning is managed exclusively by backend Cloud Functions
+      allow delete: if false;
+    }
+
+    // Default deny: all unmapped collections and documents are inaccessible
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

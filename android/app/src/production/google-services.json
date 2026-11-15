@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "842728648829",
+    "project_id": "super-dash-game",
+    "storage_bucket": "super-dash-game.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:842728648829:android:fea85327b0e1edc3d18114",
+        "android_client_info": {
+          "package_name": "com.verygoodventures.super_dash"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDQ6PeqfRVwC6UMk1RUlBSMuKOWJ3ZWvRY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

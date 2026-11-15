@@ -105,7 +105,7 @@ class _ShinobiSignOnPageState extends State<ShinobiSignOnPage>
       providerName: 'Google',
       action: () async {
         final authRepo = context.read<AuthenticationRepository>();
-        await authRepo.signInAnonymously();
+        await authRepo.signInWithGoogle();
       },
     );
   }
@@ -115,7 +115,7 @@ class _ShinobiSignOnPageState extends State<ShinobiSignOnPage>
       providerName: 'Apple',
       action: () async {
         final authRepo = context.read<AuthenticationRepository>();
-        await authRepo.signInAnonymously();
+        await authRepo.signInWithApple();
       },
     );
   }

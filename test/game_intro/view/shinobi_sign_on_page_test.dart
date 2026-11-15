@@ -24,6 +24,12 @@ void main() {
       when(authenticationRepository.signInAnonymously).thenAnswer(
         (_) => Future.value(),
       );
+      when(authenticationRepository.signInWithGoogle).thenAnswer(
+        (_) => Future.value(),
+      );
+      when(authenticationRepository.signInWithApple).thenAnswer(
+        (_) => Future.value(),
+      );
     });
 
     Widget buildSubject() {
@@ -65,6 +71,47 @@ void main() {
       await tester.pump(const Duration(milliseconds: 500));
 
       verify(() => authenticationRepository.signInAnonymously()).called(1);
+    });
+
+    testWidgets('tapping Sign in with Google triggers signInWithGoogle',
+        (tester) async {
+      await tester.pumpWidget(buildSubject());
+
+      await tester.tap(find.text('Sign in with Google'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
+      await tester.pump(const Duration(milliseconds: 500));
+
+      verify(() => authenticationRepository.signInWithGoogle()).called(1);
+    });
+
+    testWidgets('tapping Sign in with Apple triggers signInWithApple',
+        (tester) async {
+      await tester.pumpWidget(buildSubject());
+
+      await tester.tap(find.text('Sign in with Apple'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
+      await tester.pump(const Duration(milliseconds: 500));
+
+      verify(() => authenticationRepository.signInWithApple()).called(1);
+    });
+
+    testWidgets('displays error snackbar when sign-in fails', (tester) async {
+      when(authenticationRepository.signInWithGoogle).thenThrow(
+        Exception('Network timeout'),
+      );
+
+      await tester.pumpWidget(buildSubject());
+
+      await tester.tap(find.text('Sign in with Google'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
+
+      expect(
+        find.textContaining('Sign in notice: Exception: Network timeout'),
+        findsOneWidget,
+      );
     });
   });
 }

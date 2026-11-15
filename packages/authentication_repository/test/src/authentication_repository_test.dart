@@ -139,6 +139,86 @@ void main() {
       });
     });
 
+    group('signInWithApple', () {
+      test('calls customAppleSignIn when provided', () async {
+        var called = false;
+        await authenticationRepository.signInWithApple(
+          customAppleSignIn: () async {
+            called = true;
+            return userCredential;
+          },
+        );
+        expect(called, isTrue);
+      });
+
+      test('throws AuthenticationException on failure', () async {
+        expect(
+          () => authenticationRepository.signInWithApple(
+            customAppleSignIn: () async => throw Exception('Apple error'),
+          ),
+          throwsA(isA<AuthenticationException>()),
+        );
+      });
+    });
+
+    group('signInWithEmailAndPassword', () {
+      test('calls signInWithEmailAndPassword on FirebaseAuth', () async {
+        when(
+          () => firebaseAuth.signInWithEmailAndPassword(
+            email: 'test@example.com',
+            password: 'password123',
+          ),
+        ).thenAnswer((_) async => userCredential);
+
+        await authenticationRepository.signInWithEmailAndPassword(
+          email: 'test@example.com',
+          password: 'password123',
+        );
+
+        verify(
+          () => firebaseAuth.signInWithEmailAndPassword(
+            email: 'test@example.com',
+            password: 'password123',
+          ),
+        ).called(1);
+      });
+
+      test('throws AuthenticationException on failure', () async {
+        when(
+          () => firebaseAuth.signInWithEmailAndPassword(
+            email: 'test@example.com',
+            password: 'password123',
+          ),
+        ).thenThrow(Exception('auth failure'));
+
+        expect(
+          () => authenticationRepository.signInWithEmailAndPassword(
+            email: 'test@example.com',
+            password: 'password123',
+          ),
+          throwsA(isA<AuthenticationException>()),
+        );
+      });
+    });
+
+    group('signOut', () {
+      test('calls signOut on FirebaseAuth', () async {
+        when(() => firebaseAuth.signOut()).thenAnswer((_) async {});
+
+        await authenticationRepository.signOut();
+        verify(() => firebaseAuth.signOut()).called(1);
+      });
+
+      test('throws AuthenticationException on failure', () async {
+        when(() => firebaseAuth.signOut()).thenThrow(Exception('signOut error'));
+
+        expect(
+          () => authenticationRepository.signOut(),
+          throwsA(isA<AuthenticationException>()),
+        );
+      });
+    });
+
     group('dispose', () {
       test('cancels internal subscriptions', () async {
         final controller = StreamController<fb.User>();

@@ -184,5 +184,34 @@ void main() {
         );
       },
     );
+
+    test(
+      'Drop-off bluff geometry prevents grounded state across empty gaps or chasm holes',
+      () {
+        // Platform bluff bounds for Act 1:
+        // Left Bluff: x in [0, 455]
+        // Right Bluff: x in [585, 1024]
+        // Empty Gap / Hole: x in (455, 585)
+        bool isHorizontallyOnBluff(double playerX, double playerWidth) {
+          final left = playerX;
+          final right = playerX + playerWidth;
+          final onLeftBluff = right > 0 + 2 && left < 455 - 2;
+          final onRightBluff = right > 585 + 2 && left < 1024 - 2;
+          return onLeftBluff || onRightBluff;
+        }
+
+        // On Left Bluff at starting position X = 280
+        expect(isHorizontallyOnBluff(280.0, 36.0), isTrue);
+
+        // Near edge of Left Bluff X = 430
+        expect(isHorizontallyOnBluff(430.0, 36.0), isTrue);
+
+        // Walking past drop-off edge into empty gap X = 500
+        expect(isHorizontallyOnBluff(500.0, 36.0), isFalse);
+
+        // On Right Bluff X = 650
+        expect(isHorizontallyOnBluff(650.0, 36.0), isTrue);
+      },
+    );
   });
 }

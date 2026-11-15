@@ -190,9 +190,10 @@
         floorY: 482,
         spawn: { x: 280, y: 482 - 52 },
         platforms: [
-          { x: 0, y: 482, w: 1024, h: 94, isOneWay: false, name: 'Ground Baseline' },
-          { x: 0, y: 350, w: 455, h: 226, isOneWay: false, name: 'Left Mountain Bluff' },
-          { x: 585, y: 350, w: 439, h: 226, isOneWay: false, name: 'Right Mountain Bluff' },
+          { x: 0, y: 482, w: 455, h: 94, isOneWay: false, name: 'Left Bluff Ground' },
+          { x: 585, y: 482, w: 439, h: 94, isOneWay: false, name: 'Right Bluff Ground' },
+          { x: 0, y: 350, w: 455, h: 20, isOneWay: true, name: 'Left Bluff Terrace' },
+          { x: 585, y: 350, w: 439, h: 20, isOneWay: true, name: 'Right Bluff Terrace' },
           { x: 0, y: 265, w: 140, h: 20, isOneWay: false, name: 'Left Shrine Terrace Porch' },
           { x: 890, y: 150, w: 134, h: 20, isOneWay: false, name: 'Upper Temple Terrace' }
         ],
@@ -336,19 +337,13 @@
       updateDiagnostics();
     }
 
-    // Ground contact evaluation with tolerance
+    // Ground contact evaluation with tolerance (respects drop-off bluffs & platform boundaries)
     function isWithinGroundContactTolerance(pX, pY, pW, pH, vy) {
       if (Math.abs(vy) > 0.05) return false;
 
       const feetY = pY + pH;
-      const targetGround = activeWorld.floorY || FLOOR_Y;
 
-      // 1. Verified bottom ground baseline
-      if (Math.abs(feetY - targetGround) <= GROUND_CONTACT_TOLERANCE) {
-        return true;
-      }
-
-      // 2. Flat platforms
+      // 1. Flat platforms & ground bluff segments
       for (const p of platforms) {
         const inX = (pX + pW > p.x + 2) && (pX < p.x + p.w - 2);
         if (inX && Math.abs(feetY - p.y) <= GROUND_CONTACT_TOLERANCE) {
@@ -356,7 +351,7 @@
         }
       }
 
-      // 3. Slopes
+      // 2. Slopes
       for (const s of slopes) {
         const minX = Math.min(s.startX, s.endX);
         const maxX = Math.max(s.startX, s.endX);
@@ -596,17 +591,7 @@
         }
       }
 
-      // 3. Fallback Solid ground baseline (Y = FLOOR_Y or activeWorld.floorY)
-      const currentFloorY = activeWorld.floorY || FLOOR_Y;
-      if (!onSurface && currentFloorY && player.vy >= 0 && !player.isDropping) {
-        if (feetY >= currentFloorY - GROUND_CONTACT_TOLERANCE && feetY <= currentFloorY + 18) {
-          player.y = currentFloorY - player.h;
-          player.vy = 0;
-          onSurface = true;
-        }
-      }
-
-      // Pit Fall Safeguard
+      // Pit Fall Safeguard (walking off a bluff drops into pit)
       if (player.y > VIRTUAL_H + 40) {
         resetNinja();
       }
@@ -688,14 +673,18 @@
           ctx.fillText(`Stair Ramp: (${s.startX},${s.startY}) -> (${s.endX},${s.endY})`, s.startX - 40, s.startY - 10);
         });
 
-        // Ground Baseline Highlight Line
+        // Ground Baseline Highlight Segments (shows drop-off bluffs & chasm gaps clearly)
         ctx.strokeStyle = '#22c55e';
-        ctx.lineWidth = 2;
-        ctx.beginPath();
+        ctx.lineWidth = 3;
         const activeFloorY = activeWorld.floorY || FLOOR_Y;
-        ctx.moveTo(0, activeFloorY);
-        ctx.lineTo(VIRTUAL_W, activeFloorY);
-        ctx.stroke();
+        platforms.forEach(p => {
+          if (!p.isOneWay && p.y === activeFloorY) {
+            ctx.beginPath();
+            ctx.moveTo(p.x, p.y);
+            ctx.lineTo(p.x + p.w, p.y);
+            ctx.stroke();
+          }
+        });
       }
 
       // 3. Orbs

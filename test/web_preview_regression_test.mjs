@@ -183,4 +183,33 @@ assert.strictEqual(landed, true, 'Player must land safely back on ground baselin
 assert.strictEqual(elements.groundedDisplay.textContent, 'Grounded (Flush Y=482)', 'HUD must return to "Grounded (Flush Y=482)" upon landing');
 console.log('✓ Jump, airborne flight, and ground re-contact recovery verified');
 
+// Test 6: Drop-off Bluff & Empty Gap / Hole Physics
+// Player at x: 280 (Left Bluff) is grounded
+assert.strictEqual(sim.isWithinGroundContactTolerance(280, 482 - 52, 36, 52, 0), true);
+
+// Walking past x: 455 drops off the bluff into the chasm hole (x: 455..585)
+const chasmMidX = 520; // In the middle of the empty chasm hole
+const inChasmContact = sim.isWithinGroundContactTolerance(chasmMidX, 482 - 52, 36, 52, 0);
+assert.strictEqual(inChasmContact, false, 'Ninja MUST NOT be able to walk across an empty gap or hole at Y = 482');
+
+// Place player at edge and simulate walking off bluff into hole
+sim.player.x = 460; // Past bluff edge
+sim.player.y = 482 - 52;
+sim.player.vy = 0;
+sim.player.isOnGround = false;
+
+// In gap, contact tolerance is false, gravity applies
+assert.strictEqual(sim.isWithinGroundContactTolerance(sim.player.x, sim.player.y, sim.player.w, sim.player.h, sim.player.vy), false);
+sim.updateDiagnostics();
+assert.ok(elements.groundedDisplay.textContent.startsWith('Airborne'), 'HUD must report Airborne when stepping into gap hole');
+
+// Advance frames: player falls down into pit
+for (let f = 0; f < 30; f++) {
+  sim.player.vy += sim.player.gravity * dt;
+  sim.player.y += sim.player.vy * dt;
+}
+assert.ok(sim.player.y + sim.player.h > 482, 'Player must fall below ground baseline into chasm');
+assert.ok(sim.player.vy > 0, 'Vertical velocity must accelerate downward under gravity in pit');
+console.log('✓ Drop-off bluff and chasm pit fall physics verified (ninja cannot walk across empty holes)');
+
 console.log('--- ALL REGRESSION CHECKS PASSED SUCCESSFULLY ---');

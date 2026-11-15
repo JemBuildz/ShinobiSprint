@@ -1,0 +1,132 @@
+{
+  "ashigaru.png": {
+    "width": 360,
+    "height": 250,
+    "asset_path": "foes/ashigaru.png"
+  },
+  "ronin.png": {
+    "width": 163,
+    "height": 280,
+    "asset_path": "foes/ronin.png"
+  },
+  "archer.png": {
+    "width": 253,
+    "height": 165,
+    "asset_path": "foes/archer.png"
+  },
+  "sumo.png": {
+    "width": 268,
+    "height": 205,
+    "asset_path": "foes/sumo.png"
+  },
+  "oni.png": {
+    "width": 234,
+    "height": 235,
+    "asset_path": "foes/oni.png"
+  },
+  "tengu.png": {
+    "width": 301,
+    "height": 238,
+    "asset_path": "foes/tengu.png"
+  },
+  "tsuchigumo.png": {
+    "width": 307,
+    "height": 197,
+    "asset_path": "foes/tsuchigumo.png"
+  },
+  "hitodama.png": {
+    "width": 278,
+    "height": 220,
+    "asset_path": "foes/hitodama.png"
+  },
+  "karakasa.png": {
+    "width": 259,
+    "height": 245,
+    "asset_path": "foes/karakasa.png"
+  },
+  "ancestral_katana.png": {
+    "width": 345,
+    "height": 158,
+    "asset_path": "foes/ancestral_katana.png"
+  },
+  "cursed_well.png": {
+    "width": 278,
+    "height": 188,
+    "asset_path": "foes/cursed_well.png"
+  },
+  "broken_lantern.png": {
+    "width": 168,
+    "height": 200,
+    "asset_path": "foes/broken_lantern.png"
+  },
+  "ninja_blue.png": {
+    "width": 148,
+    "height": 240,
+    "asset_path": "foes/ninja_blue.png"
+  },
+  "ninja_brown.png": {
+    "width": 127,
+    "height": 242,
+    "asset_path": "foes/ninja_brown.png"
+  },
+  "ninja_cyan.png": {
+    "width": 141,
+    "height": 189,
+    "asset_path": "foes/ninja_cyan.png"
+  },
+  "ninja_purple.png": {
+    "width": 172,
+    "height": 220,
+    "asset_path": "foes/ninja_purple.png"
+  },
+  "ninja_dark.png": {
+    "width": 152,
+    "height": 220,
+    "asset_path": "foes/ninja_dark.png"
+  },
+  "ninja_ghostly.png": {
+    "width": 161,
+    "height": 215,
+    "asset_path": "foes/ninja_ghostly.png"
+  },
+  "kitsune.png": {
+    "width": 257,
+    "height": 240,
+    "asset_path": "foes/kitsune.png"
+  },
+  "shadow_portal.png": {
+    "width": 245,
+    "height": 185,
+    "asset_path": "foes/shadow_portal.png"
+  },
+  "ofuda_talisman.png": {
+    "width": 227,
+    "height": 160,
+    "asset_path": "foes/ofuda_talisman.png"
+  },
+  "tengu_gust.png": {
+    "width": 218,
+    "height": 130,
+    "asset_path": "foes/tengu_gust.png"
+  },
+  "smoke_puff.png": {
+    "width": 188,
+    "height": 127,
+    "asset_path": "foes/smoke_puff.png"
+  },
+  "cursed_arrow.png": {
+    "width": 236,
+    "height": 95,
+    "asset_path": "foes/cursed_arrow.png"
+  },
+  "magatama.png": {
+    "width": 206,
+    "height": 181,
+    "asset_path": "foes/magatama.png"
+  },
+  "caltrops.png": {
+    "width": 218,
+    "height": 140,
+    "asset_path": "foes/caltrops.png"
+  }
+}

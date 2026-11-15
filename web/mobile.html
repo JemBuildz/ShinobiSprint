@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Super Dash - Mobile Device Preview</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      background: radial-gradient(circle at 50% 20%, #1e293b, #0f172a 80%);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: #f8fafc;
+      overflow-x: hidden;
+      padding: 24px;
+    }
+
+    .toolbar {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 24px;
+      background: rgba(30, 41, 59, 0.8);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 10px 20px;
+      border-radius: 9999px;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #38bdf8;
+    }
+    .badge-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #10b981;
+      box-shadow: 0 0 10px #10b981;
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.85); }
+    }
+    .device-btn {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: #e2e8f0;
+      padding: 6px 14px;
+      border-radius: 9999px;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .device-btn:hover, .device-btn.active {
+      background: #0284c7;
+      color: white;
+      border-color: #38bdf8;
+      box-shadow: 0 0 12px rgba(56, 189, 248, 0.4);
+    }
+
+    /* Phone Shell */
+    .phone-wrapper {
+      position: relative;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .phone-case {
+      width: 412px;
+      height: 860px;
+      background: #1e2029;
+      border-radius: 54px;
+      padding: 12px;
+      box-shadow: 
+        0 0 0 4px #33384a,
+        0 0 0 6px #1a1c24,
+        0 25px 70px -10px rgba(0, 0, 0, 0.85),
+        inset 0 0 6px rgba(255, 255, 255, 0.2);
+      position: relative;
+    }
+    .phone-screen {
+      width: 100%;
+      height: 100%;
+      border-radius: 44px;
+      overflow: hidden;
+      background: #000;
+      position: relative;
+    }
+
+    /* Dynamic Island */
+    .island {
+      position: absolute;
+      top: 11px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 115px;
+      height: 28px;
+      background: #000;
+      border-radius: 20px;
+      z-index: 100;
+      pointer-events: none;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      padding-right: 14px;
+    }
+    .lens {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #090e1a;
+      border: 1.5px solid #1a2333;
+    }
+
+    /* Home Bar */
+    .home-bar {
+      position: absolute;
+      bottom: 8px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 134px;
+      height: 4.5px;
+      background: rgba(255, 255, 255, 0.7);
+      border-radius: 10px;
+      z-index: 100;
+      pointer-events: none;
+    }
+
+    /* Game Frame */
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      display: block;
+      background: #000;
+    }
+
+    .instructions {
+      margin-top: 20px;
+      text-align: center;
+      color: #94a3b8;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+    .key-badge {
+      display: inline-block;
+      padding: 2px 7px;
+      background: rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 11px;
+      color: #fff;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Toolbar -->
+  <div class="toolbar">
+    <div class="badge">
+      <div class="badge-dot"></div>
+      Super Dash Mobile Mode
+    </div>
+    <div style="height: 16px; width: 1px; background: rgba(255,255,255,0.15)"></div>
+    <button class="device-btn active" onclick="setDevice(412, 860, this)">iPhone 15 Pro</button>
+    <button class="device-btn" onclick="setDevice(390, 844, this)">Pixel 8</button>
+    <button class="device-btn" onclick="setDevice(480, 720, this)">Compact Tablet</button>
+  </div>
+
+  <!-- Mobile Frame -->
+  <div class="phone-wrapper">
+    <div id="phoneCase" class="phone-case">
+      <div class="phone-screen">
+        <!-- Dynamic Island -->
+        <div class="island">
+          <div class="lens"></div>
+        </div>
+
+        <!-- Super Dash Game Instance -->
+        <iframe id="gameFrame" src="/"></iframe>
+
+        <!-- iOS Home Indicator -->
+        <div class="home-bar"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Controls Guide -->
+  <div class="instructions">
+    <p>🎮 <strong>Tap / Click</strong> screen or press <span class="key-badge">Spacebar</span> to Jump &bull; Double-tap for <span class="key-badge">Phoenix Jump</span></p>
+    <p style="font-size: 12px; margin-top: 4px; opacity: 0.8;">The game is constrained inside a realistic mobile viewport with no wide desktop borders.</p>
+  </div>
+
+  <script>
+    function setDevice(w, h, btn) {
+      document.querySelectorAll('.device-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const phoneCase = document.getElementById('phoneCase');
+      phoneCase.style.width = w + 'px';
+      phoneCase.style.height = h + 'px';
+    }
+  </script>
+</body>
+</html>

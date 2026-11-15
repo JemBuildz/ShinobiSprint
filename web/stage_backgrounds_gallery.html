@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shinobi Sprint — All Active Level Scenes & Visual Showcase</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { background-color: #0b0f19; color: #e2e8f0; font-family: ui-sans-serif, system-ui, sans-serif; }
+    .stage-card { transition: transform 0.2s ease, box-shadow 0.2s ease; }
+    .stage-card:hover { transform: translateY(-4px); box-shadow: 0 16px 36px -10px rgba(0,0,0,0.8); }
+  </style>
+</head>
+<body class="p-6 md:p-12">
+  <div class="max-w-7xl mx-auto space-y-12">
+    <!-- Header -->
+    <header class="border-b border-slate-800 pb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div>
+        <h1 class="text-3xl md:text-4xl font-extrabold text-white tracking-tight flex items-center gap-3">
+          <span>⛩️</span> Shinobi Sprint — All Active Level Scenes
+        </h1>
+        <p class="text-sm text-slate-400 mt-1">
+          Complete visual catalog of all 4 active painted stage plates powering all 15 campaign levels across Flutter Web and Mobile Preview.
+        </p>
+      </div>
+      <div class="flex items-center gap-3">
+        <a href="mobile_preview.html" class="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold transition shadow-lg flex items-center gap-2">
+          <span>🎮</span> Launch Mobile Preview (All Levels)
+        </a>
+        <a href="shinobi_mobile_preview.html" class="px-4 py-2.5 bg-amber-600 hover:bg-amber-500 text-white rounded-xl text-xs font-bold transition shadow-lg flex items-center gap-2">
+          <span>⚡</span> Launch Instant Act Switcher
+        </a>
+      </div>
+    </header>
+
+    <!-- SECTION 1: MASTER 4-SCENE OVERVIEW -->
+    <section class="space-y-4">
+      <div class="flex items-center justify-between border-l-4 border-amber-500 pl-3">
+        <h2 class="text-xl font-bold text-white tracking-wide">4-Biome Campaign Overview</h2>
+        <span class="text-xs px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 font-semibold">100% Uniform Master Plates</span>
+      </div>
+      <div class="rounded-2xl overflow-hidden border border-slate-800 shadow-2xl bg-black">
+        <img src="all_active_level_scenes_overview.png" alt="All 4 Active Scenes Overview" class="w-full h-auto object-cover">
+      </div>
+    </section>
+
+    <!-- SECTION 2: DETAILED BREAKDOWN OF EACH LEVEL SCENE -->
+    <section class="space-y-8">
+      <div class="flex items-center justify-between border-l-4 border-emerald-500 pl-3">
+        <h2 class="text-xl font-bold text-white tracking-wide">Detailed Level Plate Specifications</h2>
+        <span class="text-xs px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 font-semibold">Calibrated Physics Ready</span>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        
+        <!-- SCENE 1: LEVEL 1-1 -->
+        <div class="stage-card bg-slate-900/90 border border-slate-800 rounded-2xl overflow-hidden flex flex-col shadow-xl">
+          <div class="relative bg-black aspect-video overflow-hidden">
+            <img src="../assets/images/stage1_daytime_torii_shrine_1024.png" alt="Act I Level 1-1 Daytime Torii Shrine Path" class="w-full h-full object-cover">
+            <div class="absolute top-3 left-3 bg-rose-600 text-white text-xs font-black px-2.5 py-1 rounded-md tracking-wider uppercase shadow">
+              LEVEL 1-1
+            </div>
+            <div class="absolute bottom-3 right-3 bg-black/85 text-emerald-300 text-xs px-2.5 py-1 rounded font-mono border border-emerald-500/30">
+              Bluff Ground: Y = 350
+            </div>
+          </div>
+          <div class="p-6 flex-1 flex flex-col justify-between space-y-4">
+            <div>
+              <div class="flex items-center gap-2 text-xs text-rose-400 font-bold uppercase tracking-wider">
+                <span>ACT I: DAWN VILLAGE</span> • <span>Opening Shrine Path</span>
+              </div>
+              <h3 class="text-xl font-extrabold text-white mt-1">Daytime Torii Shrine Path</h3>
+              <p class="text-xs text-slate-300 mt-2 leading-relaxed">
+                Sunlit sacred mountain ridge with sequential vermilion Torii gates, guardian kitsune stone statues, and a dramatic center mountain chasm leap leading up grand stone stairs to the mountain temple pavilion.
+              </p>
+            </div>
+            <div class="bg-slate-950/80 rounded-xl p-3 border border-slate-800/80 grid grid-cols-2 gap-2 text-xs">
+              <div><span class="text-slate-400">Bluff Ground:</span> <strong class="text-emerald-400 font-mono">Y = 350 (Solid)</strong></div>
+              <div><span class="text-slate-400">Left Terrace:</span> <strong class="text-amber-400 font-mono">Y = 265 (Drop-thru)</strong></div>
+              <div><span class="text-slate-400">Center Chasm:</span> <strong class="text-rose-400 font-mono">X 455..585 (Hazard)</strong></div>
+              <div><span class="text-slate-400">Grand Stairs:</span> <strong class="text-cyan-400 font-mono">(690,350)→(870,150)</strong></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SCENE 2: LEVELS 1-2 TO 1-5 -->
+        <div class="stage-card bg-slate-900/90 border border-slate-800 rounded-2xl overflow-hidden flex flex-col shadow-xl">
+          <div class="relative bg-black aspect-video overflow-hidden">
+            <img src="../assets/images/stitch_waterfall_bridge_day_1024.png" alt="Act I Levels 1-2 to 1-5 Cascade Gorge" class="w-full h-full object-cover">
+            <div class="absolute top-3 left-3 bg-cyan-600 text-white text-xs font-black px-2.5 py-1 rounded-md tracking-wider uppercase shadow">
+              LEVELS 1-2 TO 1-5
+            </div>
+            <div class="absolute bottom-3 right-3 bg-black/85 text-cyan-300 text-xs px-2.5 py-1 rounded font-mono border border-cyan-500/30">
+              Floor Baseline: Y = 482
+            </div>
+          </div>
+          <div class="p-6 flex-1 flex flex-col justify-between space-y-4">
+            <div>
+              <div class="flex items-center gap-2 text-xs text-cyan-400 font-bold uppercase tracking-wider">
+                <span>ACT I: DAWN VILLAGE</span> • <span>River Gorge Progression</span>
+              </div>
+              <h3 class="text-xl font-extrabold text-white mt-1">Cascade Gorge & Wooden Arch Bridge</h3>
+              <p class="text-xs text-slate-300 mt-2 leading-relaxed">
+                Rushing alpine waterfalls plunge into a rocky river canyon. Connects a mossy forest cottage on the left cliff to a mountain teahouse on the right via a suspended timber arch bridge.
+              </p>
+            </div>
+            <div class="bg-slate-950/80 rounded-xl p-3 border border-slate-800/80 grid grid-cols-2 gap-2 text-xs">
+              <div><span class="text-slate-400">Riverbank Ground:</span> <strong class="text-emerald-400 font-mono">Y = 482 (Left & Right)</strong></div>
+              <div><span class="text-slate-400">Arch Bridge Deck:</span> <strong class="text-amber-400 font-mono">Y = 375 (Drop-thru)</strong></div>
+              <div><span class="text-slate-400">Cottage / Teahouse:</span> <strong class="text-amber-400 font-mono">Y = 350 (Cliffs)</strong></div>
+              <div><span class="text-slate-400">River Rapids Hazard:</span> <strong class="text-rose-400 font-mono">X = 420-580, Y = 520</strong></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SCENE 3: LEVELS 2-1 TO 2-5 -->
+        <div class="stage-card bg-slate-900/90 border border-slate-800 rounded-2xl overflow-hidden flex flex-col shadow-xl">
+          <div class="relative bg-black aspect-video overflow-hidden">
+            <img src="../assets/images/level2_night_waterfall_stage_1024.png" alt="Act II Nighttime Waterfall Gorge" class="w-full h-full object-cover">
+            <div class="absolute top-3 left-3 bg-teal-500 text-slate-950 text-xs font-black px-2.5 py-1 rounded-md tracking-wider uppercase shadow">
+              LEVELS 2-1 TO 2-5
+            </div>
+            <div class="absolute bottom-3 right-3 bg-black/85 text-teal-300 text-xs px-2.5 py-1 rounded font-mono border border-teal-500/30">
+              Floor Baseline: Y = 350 / 380
+            </div>
+          </div>
+          <div class="p-6 flex-1 flex flex-col justify-between space-y-4">
+            <div>
+              <div class="flex items-center gap-2 text-xs text-teal-400 font-bold uppercase tracking-wider">
+                <span>ACT II: WATERFALL GORGE</span> • <span>Bioluminescent Canyon</span>
+              </div>
+              <h3 class="text-xl font-extrabold text-white mt-1">Nighttime Waterfall Gorge & Dual Bridges</h3>
+              <p class="text-xs text-slate-300 mt-2 leading-relaxed">
+                Bioluminescent cascades plunging through a moonlit mountain canyon. Features dual suspended timber rope bridges with warm glowing amber lanterns, a center mossy stone pier, and upper lookout cliffs.
+              </p>
+            </div>
+            <div class="bg-slate-950/80 rounded-xl p-3 border border-slate-800/80 grid grid-cols-2 gap-2 text-xs">
+              <div><span class="text-slate-400">Cliff Terraces:</span> <strong class="text-emerald-400 font-mono">Y = 350 / 380</strong></div>
+              <div><span class="text-slate-400">Suspended Bridges:</span> <strong class="text-amber-400 font-mono">Y = 365 / 380 (Drop-thru)</strong></div>
+              <div><span class="text-slate-400">River Rapids Hazard:</span> <strong class="text-rose-400 font-mono">X = 230-760, Y = 520</strong></div>
+              <div><span class="text-slate-400">Upper Lookout:</span> <strong class="text-cyan-400 font-mono">Y = 240</strong></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SCENE 4: LEVELS 3-1 TO 3-5 -->
+        <div class="stage-card bg-slate-900/90 border border-slate-800 rounded-2xl overflow-hidden flex flex-col shadow-xl">
+          <div class="relative bg-black aspect-video overflow-hidden">
+            <img src="../assets/images/level3_cinematic_stage_1024.png" alt="Act III Midnight Autumn" class="w-full h-full object-cover">
+            <div class="absolute top-3 left-3 bg-purple-500 text-white text-xs font-black px-2.5 py-1 rounded-md tracking-wider uppercase shadow">
+              LEVELS 3-1 TO 3-5
+            </div>
+            <div class="absolute bottom-3 right-3 bg-black/85 text-purple-300 text-xs px-2.5 py-1 rounded font-mono border border-purple-500/30">
+              Floor Baseline: Y = 440 / 418
+            </div>
+          </div>
+          <div class="p-6 flex-1 flex flex-col justify-between space-y-4">
+            <div>
+              <div class="flex items-center gap-2 text-xs text-purple-400 font-bold uppercase tracking-wider">
+                <span>ACT III: MIDNIGHT AUTUMN</span> • <span>Sacred Pagoda</span>
+              </div>
+              <h3 class="text-xl font-extrabold text-white mt-1">Midnight Autumn Pagoda & River Bridge</h3>
+              <p class="text-xs text-slate-300 mt-2 leading-relaxed">
+                Moonlit midnight ambiance beneath falling scarlet momiji (maple) leaves. Glowing paper chochin lanterns illuminate a masterwork arched pagoda bridge spanning mist-shrouded river waters.
+              </p>
+            </div>
+            <div class="bg-slate-950/80 rounded-xl p-3 border border-slate-800/80 grid grid-cols-2 gap-2 text-xs">
+              <div><span class="text-slate-400">Riverbank Terraces:</span> <strong class="text-emerald-400 font-mono">Y = 418 / 440</strong></div>
+              <div><span class="text-slate-400">Arched Pagoda Bridge:</span> <strong class="text-amber-400 font-mono">Y = 395 (Drop-thru)</strong></div>
+              <div><span class="text-slate-400">River Mist Hazard:</span> <strong class="text-rose-400 font-mono">Y = 535 (Torrent Rapids)</strong></div>
+              <div><span class="text-slate-400">Stone Piers & Lanterns:</span> <strong class="text-cyan-400 font-mono">Y = 370-420</strong></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- SECTION 3: STITCH 2D SCENE LIBRARY CATALOG -->
+    <section class="space-y-6 pt-4 border-t border-slate-800">
+      <div class="flex items-center justify-between border-l-4 border-indigo-500 pl-3">
+        <div>
+          <h2 class="text-xl font-bold text-white tracking-wide">3. Google Stitch 2D Scene Catalog</h2>
+          <p class="text-xs text-slate-400 mt-0.5">Discovered in Stitch Project: <code class="text-amber-400">Shinobi Sprint (12274354107792210135)</code></p>
+        </div>
+        <span class="text-xs px-3 py-1 rounded-full bg-indigo-500/20 text-indigo-300 font-semibold">10 Biomes & Plates</span>
+      </div>
+
+      <div class="rounded-2xl overflow-hidden border border-slate-800 shadow-2xl bg-black">
+        <img src="stitch_scenes_catalog_grid.png" alt="Stitch 2D Scene Catalog Grid" class="w-full h-auto object-cover">
+      </div>
+    </section>
+  </div>
+</body>
+</html>

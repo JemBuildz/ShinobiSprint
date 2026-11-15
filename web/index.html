@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <!--
+    If you are serving your web app in a path other than the root, change the
+    href value below to reflect the base path you are serving from.
+
+    The path provided below has to start and end with a slash "/" in order for
+    it to work correctly.
+
+    For more details:
+    * https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base
+
+    This is a placeholder for base href that will be replaced by the value of
+    the `--base-href` argument provided to `flutter build`.
+  -->
+  <base href="$FLUTTER_BASE_HREF">
+
+  <meta charset="UTF-8">
+  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <meta name="description" content="Shinobi Sprint, a cinematic 2D platformer game built with Flutter and Flame.">
+
+  <!-- iOS meta tags & icons -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="Shinobi Sprint">
+  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+
+  <!-- Share image -->
+  <meta property="og:image" content="https://storage.googleapis.com/super-dash-game.appspot.com/share.png">
+  <meta property="og:image:type" content="image/png">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="favicon.png" />
+  <link
+    href="https://fonts.googleapis.com/css?family=Google+Sans:400,500"
+    rel="stylesheet"
+  />
+  <link
+    href="https://fonts.googleapis.com/css?family=Google+Sans+Text:400,500"
+    rel="stylesheet"
+  />
+
+  <title>Shinobi Sprint - A 2D Feudal Platformer Built in Flutter</title>
+  <link rel="manifest" href="manifest.json">
+
+  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-67589403-11"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date()); 
+    gtag('config', 'UA-67589403-11');
+  </script>
+  <style type="text/css">
+    html {
+      height: 100%;
+    }
+
+    body.loading-mode {
+      min-height: 100%;
+      display: flex;
+      flex: 1;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      overflow: hidden;
+      margin: 0;
+      background-color: #090D1A;
+      background: url("ShinobiSprint_GameCover.png") no-repeat center center fixed;
+      -webkit-background-size: cover;
+      -moz-background-size: cover;
+      -o-background-size: cover;
+      background-size: cover;
+    }
+
+    .loading-mode p {
+      font-family: "Google Sans Text", sans-serif;
+      font-style: normal;
+      font-weight: 700;
+      font-size: 14px;
+      line-height: 20px;
+      text-align: center;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: #FBBF24;
+      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8), 0 0 16px rgba(0, 0, 0, 0.9);
+    }
+
+    .loading-mode #progress-bar {
+      position: absolute;
+      bottom: 80px;
+      padding: 3px;
+      width: 360px;
+      max-width: 85%;
+      background: rgba(9, 13, 26, 0.85);
+      border: 1.5px solid rgba(251, 191, 36, 0.6);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.7), 0 0 15px rgba(251, 191, 36, 0.25);
+      border-radius: 100px;
+    }
+
+    .loading-mode #progress-indicator {
+      height: 18px;
+      width: 0%;
+      background: linear-gradient(90deg, #10B981, #FBBF24);
+      border-radius: 100px;
+      box-shadow: 0 0 10px rgba(16, 185, 129, 0.6);
+    }
+
+    #splash-copy {
+      position: absolute;
+      bottom: 110px;
+      font-size: 14px;
+    }
+
+    #splash-logo {
+      display: none;
+    }
+
+    #cookie-bar {
+      position: fixed;
+      padding: 24px;
+      bottom: 0;
+      width: 100%;
+      max-width: 820px;
+      background-color: #3130364D;
+      border: 2px solid rgba(255, 255, 255, .2);
+      box-sizing: border-box;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 9999;
+      flex-direction: column;
+      border-top-left-radius: 15px;
+      border-top-right-radius: 15px;
+    }
+
+    #cookie-bar p {
+      margin: 0;
+      padding-bottom: 24px;
+      font-size: 16px;
+      font-weight: 400;
+      font-family: "Google Sans";
+    }
+
+    #cookie-bar a {
+      text-decoration: underline;
+      color: #A9E1FB;
+    }
+
+    #cookie-bar button {
+      cursor: pointer;
+      padding: 8px 24px;
+      background: linear-gradient(170deg, rgba(208, 247, 251, 0.56), rgba(5, 181, 203, 0.56));
+      border-width: 0px;
+      border-radius: 100px;
+      font-family: "Google Sans";
+      font-style: normal;
+      font-weight: 500;
+      font-size: 16px;
+      line-height: 24px;
+      display: flex;
+      align-items: center;
+      text-align: center;
+      letter-spacing: 0.25px;
+      text-decoration: none;
+      color: #FFF;
+    }
+
+    #cookie-bar-button-border {
+      padding: 2px;
+      border-radius: 100px;
+      background: linear-gradient(170deg, rgba(255, 255, 255, 0.48), rgba(5, 181, 203, 0.56));
+    }
+  </style>
+  <script>
+    // The value below is injected by flutter build, do not touch.
+    var serviceWorkerVersion = null;
+  </script>
+</head>
+
+<body class="loading-mode">
+  <p id="splash-copy">
+    LOADING SHINOBI SPRINT...
+  </p>
+  <div id="progress-bar">
+    <div id="progress-indicator"></div>
+  </div>
+  <script src="flutter.js" defer></script>
+  <script>
+    // Force unregister service workers and clear browser cache storage for live development
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then(function (registrations) {
+        for (let registration of registrations) {
+          registration.unregister();
+        }
+      });
+    }
+    if ('caches' in window) {
+      caches.keys().then(function (names) {
+        for (let name of names) {
+          caches.delete(name);
+        }
+      });
+    }
+
+    window.addEventListener("load", function (ev) {
+      const progressBar = document.querySelector("#progress-bar");
+      const splashCopy = document.querySelector("#splash-copy");
+      const splashLogo = document.querySelector("#splash-logo");
+
+      function startApp(engineInitializer) {
+        engineInitializer.initializeEngine().then(function (appRunner) {
+          window.addEventListener("flutter-first-frame", function () {
+            if (progressBar) progressBar.remove();
+            if (splashLogo) splashLogo.remove();
+            if (splashCopy) splashCopy.remove();
+            document.body.classList.remove("loading-mode");
+          });
+          appRunner.runApp();
+        });
+      }
+
+      if (window._flutter && window._flutter.loader) {
+        _flutter.loader.loadEntrypoint({
+          serviceWorkerSettings: null,
+          onEntrypointLoaded: startApp,
+        });
+      }
+    });
+  </script>
+</body>
+
+</html>

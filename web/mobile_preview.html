@@ -1,0 +1,1527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shinobi Sprint - Mobile App Web Preview</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    @keyframes starPop {
+      0% { transform: scale(0) rotate(-45deg); opacity: 0; }
+      70% { transform: scale(1.3) rotate(10deg); opacity: 1; }
+      100% { transform: scale(1) rotate(0deg); opacity: 1; }
+    }
+    .animate-star {
+      animation: starPop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    }
+    /* Disable default touch actions on game controls */
+    .touch-btn {
+      touch-action: manipulation;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+  </style>
+</head>
+<body class="bg-[#050811] text-slate-100 min-h-screen p-3 md:p-6 flex flex-col items-center justify-center font-sans antialiased selection:bg-rose-500 selection:text-white">
+
+  <!-- Header & Controls Bar -->
+  <header class="max-w-4xl w-full text-center mb-4">
+    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs font-bold uppercase tracking-widest mb-2">
+      <span class="w-2 h-2 rounded-full bg-rose-500 animate-ping"></span>
+      <span>Official Mobile Web Simulation • 3 Acts / 15 Levels</span>
+    </div>
+    <h1 class="text-3xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-rose-300 to-amber-100 tracking-wider">
+      SHINOBI SPRINT 忍び
+    </h1>
+    <p class="text-slate-400 text-xs md:text-sm mt-1 max-w-xl mx-auto">
+      Hand-painted Feudal Biomes • 60 FPS Platform Physics • Shuriken & Katana Combat • 3-Star Campaign Progression
+    </p>
+  </header>
+
+  <!-- Main View: Phone Shell & Inspector -->
+  <main class="flex flex-col xl:flex-row items-center justify-center gap-6 max-w-6xl w-full">
+
+    <!-- Interactive Phone Container -->
+    <div class="relative flex-shrink-0">
+      <!-- Outer Smartphone Bezel -->
+      <div id="phoneBezel" class="w-[360px] h-[720px] bg-slate-950 rounded-[50px] p-3 shadow-2xl border-4 border-slate-700/80 ring-2 ring-rose-500/30 relative overflow-hidden flex flex-col transition-all duration-300">
+        
+        <!-- Dynamic Island / Top Camera Punch Hole -->
+        <div class="absolute top-4 left-1/2 -translate-x-1/2 w-24 h-5 bg-black rounded-full z-50 flex items-center justify-center gap-2 border border-slate-800 shadow-md">
+          <div class="w-2 h-2 bg-slate-900 rounded-full border border-slate-700"></div>
+          <div class="w-1.5 h-1.5 bg-indigo-950 rounded-full"></div>
+        </div>
+
+        <!-- Phone Display Screen -->
+        <div class="relative w-full h-full bg-[#03060E] rounded-[40px] overflow-hidden flex flex-col select-none">
+          
+          <!-- Mobile Status Bar -->
+          <div class="w-full pt-2.5 px-6 pb-1 flex justify-between items-center text-[11px] font-bold text-slate-300 z-40 bg-gradient-to-b from-black/80 to-transparent">
+            <span id="clockDisplay">9:41</span>
+            <div class="flex items-center gap-2">
+              <span id="fpsBadge" class="text-emerald-400 font-mono text-[10px]">60 FPS</span>
+              <span class="text-slate-400">5G</span>
+              <div class="w-5 h-2.5 border border-slate-400 rounded-sm p-0.5 flex items-center">
+                <div class="w-full h-full bg-emerald-400 rounded-2xs"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- In-Game Top HUD -->
+          <div class="absolute top-10 inset-x-0 px-3 z-30 flex items-center justify-between pointer-events-none">
+            <!-- Level Title & World Pill -->
+            <div class="pointer-events-auto flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-900/90 border border-slate-700 shadow-md backdrop-blur-md">
+              <span id="hudLevelBadge" class="px-1.5 py-0.5 rounded text-[10px] font-black bg-emerald-500 text-slate-950">1-1</span>
+              <span id="hudLevelTitle" class="text-[11px] font-bold text-slate-200 truncate max-w-[110px]">Jump Training</span>
+            </div>
+
+            <!-- Orbs & Timer Counter -->
+            <div class="flex items-center gap-2 pointer-events-auto">
+              <!-- Timer Pill -->
+              <div id="hudTimerPill" class="hidden items-center gap-1 px-2.5 py-1 rounded-full bg-slate-900/90 border border-amber-500/60 shadow-md backdrop-blur-md">
+                <span class="text-xs">⏱️</span>
+                <span id="hudTimerVal" class="text-[11px] font-black text-amber-300 font-mono">25s</span>
+              </div>
+
+              <!-- Orbs Counter -->
+              <div class="flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-900/90 border border-amber-400/70 shadow-md backdrop-blur-md">
+                <span class="text-xs">🔮</span>
+                <span id="hudOrbsVal" class="text-xs font-black text-amber-300 font-mono">0/3</span>
+              </div>
+
+              <!-- Stage Select Modal Trigger -->
+              <button id="btnOpenStageSelect" class="w-7 h-7 rounded-full bg-slate-900/90 hover:bg-slate-800 border border-slate-700 text-slate-200 flex items-center justify-center text-xs shadow-md backdrop-blur-md cursor-pointer transition-transform active:scale-90" title="Select Stage">
+                🗺️
+              </button>
+            </div>
+          </div>
+
+          <!-- Canvas Game Viewport -->
+          <div class="relative flex-1 w-full overflow-hidden cursor-pointer" id="gameViewport">
+            <canvas id="gameCanvas" width="360" height="660" class="absolute inset-0 w-full h-full"></canvas>
+
+            <!-- Touch Controls HUD Overlay (Mobile Ergonomics) -->
+            <div class="absolute bottom-4 inset-x-3 z-40 flex items-end justify-between pointer-events-none select-none">
+              
+              <!-- Left Side: D-Pad Movement (Left / Right) -->
+              <div class="flex items-center gap-2 pointer-events-auto">
+                <button id="btnLeft" class="touch-btn w-13 h-13 rounded-2xl bg-slate-900/85 active:bg-slate-700/90 border-2 border-slate-600/70 shadow-xl flex items-center justify-center text-xl text-slate-200 active:scale-95 transition-all backdrop-blur-md" title="Move Left (A / Left)">
+                  ◀
+                </button>
+                <button id="btnRight" class="touch-btn w-13 h-13 rounded-2xl bg-slate-900/85 active:bg-slate-700/90 border-2 border-slate-600/70 shadow-xl flex items-center justify-center text-xl text-slate-200 active:scale-95 transition-all backdrop-blur-md" title="Move Right (D / Right)">
+                  ▶
+                </button>
+              </div>
+
+              <!-- Right Side: Action Cluster (Drop, Shuriken, Slash, Jump) -->
+              <div class="grid grid-cols-2 gap-2 pointer-events-auto">
+                <!-- Drop Through (S / Down) -->
+                <button id="btnDrop" class="touch-btn w-12 h-12 rounded-2xl bg-amber-600/85 active:bg-amber-500 border-2 border-amber-300/80 shadow-lg flex flex-col items-center justify-center text-white active:scale-95 transition-all backdrop-blur-md" title="Drop Through (S / Down)">
+                  <span class="text-sm font-black">▼</span>
+                  <span class="text-[9px] font-black uppercase tracking-tighter">DROP</span>
+                </button>
+
+                <!-- Throw Shuriken (C / K) -->
+                <button id="btnThrow" class="touch-btn w-12 h-12 rounded-2xl bg-sky-600/85 active:bg-sky-500 border-2 border-sky-300/80 shadow-lg flex flex-col items-center justify-center text-white active:scale-95 transition-all backdrop-blur-md" title="Shuriken (C / K)">
+                  <span class="text-sm">🥷</span>
+                  <span class="text-[9px] font-black uppercase tracking-tighter">STAR</span>
+                </button>
+
+                <!-- Katana Slash (X / J) -->
+                <button id="btnSlash" class="touch-btn w-12 h-12 rounded-2xl bg-rose-600/85 active:bg-rose-500 border-2 border-rose-300/80 shadow-lg flex flex-col items-center justify-center text-white active:scale-95 transition-all backdrop-blur-md" title="Katana Strike (X / J)">
+                  <span class="text-sm">⚔️</span>
+                  <span class="text-[9px] font-black uppercase tracking-tighter">SLASH</span>
+                </button>
+
+                <!-- Jump (Space / W / Up) -->
+                <button id="btnJump" class="touch-btn w-12 h-12 rounded-2xl bg-emerald-600/85 active:bg-emerald-500 border-2 border-emerald-300/80 shadow-xl flex flex-col items-center justify-center text-white active:scale-95 transition-all backdrop-blur-md" title="Jump (Space / Up)">
+                  <span class="text-sm font-black">▲</span>
+                  <span class="text-[9px] font-black uppercase tracking-tighter">JUMP</span>
+                </button>
+              </div>
+
+            </div>
+
+            <!-- Level Clear Dialog Overlay -->
+            <div id="clearDialog" class="absolute inset-0 bg-black/85 backdrop-blur-md z-50 hidden flex-col items-center justify-center p-6 text-center select-none">
+              <div class="w-full max-w-xs bg-slate-900 border-2 border-amber-400 rounded-3xl p-5 shadow-2xl relative">
+                <span class="text-4xl block mb-1">🎉</span>
+                <span id="clearActBadge" class="text-[10px] font-bold uppercase tracking-wider text-amber-400">ACT I • DAWN VILLAGE</span>
+                <h2 id="clearLevelTitle" class="text-xl font-black text-white mt-0.5">LEVEL 1-1 CLEARED!</h2>
+                
+                <!-- Stars Row -->
+                <div class="flex items-center justify-center gap-3 my-4">
+                  <span id="star1" class="text-3xl filter drop-shadow">⭐</span>
+                  <span id="star2" class="text-3xl filter drop-shadow">⭐</span>
+                  <span id="star3" class="text-3xl filter drop-shadow">⭐</span>
+                </div>
+
+                <!-- Stats -->
+                <div class="bg-slate-950/70 rounded-2xl p-3 border border-slate-800 text-xs space-y-1 mb-5">
+                  <div class="flex justify-between text-slate-400">
+                    <span>Spirit Orbs:</span>
+                    <span id="clearOrbsVal" class="text-amber-300 font-bold">3/3</span>
+                  </div>
+                  <div class="flex justify-between text-slate-400">
+                    <span>Time Elapsed:</span>
+                    <span id="clearTimeVal" class="text-emerald-300 font-bold">12.4s</span>
+                  </div>
+                  <div class="flex justify-between text-slate-400">
+                    <span>Total Stars:</span>
+                    <span id="clearTotalStars" class="text-amber-400 font-bold">3 / 45</span>
+                  </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex gap-2">
+                  <button id="btnRetryLevel" class="flex-1 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-bold text-slate-200 transition-all active:scale-95">
+                    RETRY
+                  </button>
+                  <button id="btnNextLevel" class="flex-2 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-xs font-black text-white shadow-lg shadow-emerald-950/60 transition-all active:scale-95">
+                    NEXT LEVEL ➔
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Time Up Dialog Overlay -->
+            <div id="timeUpDialog" class="absolute inset-0 bg-black/85 backdrop-blur-md z-50 hidden flex-col items-center justify-center p-6 text-center select-none">
+              <div class="w-full max-w-xs bg-slate-900 border-2 border-rose-500 rounded-3xl p-5 shadow-2xl">
+                <span class="text-4xl block mb-1">⏱️</span>
+                <h2 class="text-2xl font-black text-rose-400">TIME'S UP!</h2>
+                <p class="text-xs text-slate-400 mt-2 mb-5">
+                  The shadow realm closed before you could retrieve all the spirit orbs.
+                </p>
+                <button id="btnRetryTimeUp" class="w-full py-3 rounded-xl bg-gradient-to-r from-rose-600 to-amber-600 text-xs font-black text-white shadow-lg transition-all active:scale-95">
+                  TRY AGAIN
+                </button>
+              </div>
+            </div>
+
+            <!-- Stage Select Modal Overlay -->
+            <div id="stageSelectModal" class="absolute inset-0 bg-slate-950/95 backdrop-blur-md z-50 hidden flex-col p-4 select-none overflow-y-auto">
+              <div class="flex items-center justify-between pb-3 border-b border-slate-800 mb-3">
+                <div>
+                  <h3 class="text-base font-black text-white tracking-wide">CAMPAIGN STAGES</h3>
+                  <p class="text-[10px] text-slate-400">15 Handcrafted Feudal Ninja Trials</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span id="modalStarsCounter" class="px-2.5 py-0.5 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-300 text-xs font-bold">
+                    ⭐ 3/45
+                  </span>
+                  <button id="btnCloseStageSelect" class="w-7 h-7 rounded-full bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center text-sm">
+                    ✕
+                  </button>
+                </div>
+              </div>
+
+              <!-- Act Tabs -->
+              <div class="grid grid-cols-3 gap-1.5 p-1 bg-slate-900 rounded-xl mb-3 border border-slate-800">
+                <button id="tabAct1" class="py-1.5 rounded-lg text-[10px] font-bold bg-emerald-600 text-white transition-all">
+                  ACT I: Dawn
+                </button>
+                <button id="tabAct2" class="py-1.5 rounded-lg text-[10px] font-bold text-slate-400 hover:text-white transition-all">
+                  ACT II: Sunset
+                </button>
+                <button id="tabAct3" class="py-1.5 rounded-lg text-[10px] font-bold text-slate-400 hover:text-white transition-all">
+                  ACT III: Night
+                </button>
+              </div>
+
+              <!-- Levels List Container -->
+              <div id="levelsListContainer" class="flex-1 space-y-2 overflow-y-auto pr-1">
+                <!-- Dynamically populated via JS -->
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Side: Developer & Gameplay Controls Deck -->
+    <div class="w-full max-w-md bg-slate-900/90 border border-slate-800 rounded-3xl p-5 shadow-2xl backdrop-blur-md flex flex-col gap-4 text-xs">
+      
+      <!-- Quick Level Switcher -->
+      <div>
+        <label class="block text-slate-400 font-bold mb-1.5 uppercase tracking-wider text-[11px]">
+          Quick Level Jump (3 Acts / 15 Levels)
+        </label>
+        <select id="selectQuickLevel" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-slate-200 font-medium focus:outline-none focus:border-rose-500">
+          <!-- Populated by script -->
+        </select>
+      </div>
+
+      <!-- Level Details Card -->
+      <div class="bg-slate-950/80 rounded-2xl p-4 border border-slate-800 space-y-2">
+        <div class="flex items-center justify-between">
+          <span id="infoActPill" class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+            ACT I: DAWN VILLAGE
+          </span>
+          <span id="infoTrialPill" class="hidden px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">
+            ⏱️ 25s TRIAL
+          </span>
+        </div>
+        <h4 id="infoTitle" class="text-sm font-black text-white">1-1: Jump Training</h4>
+        <p id="infoDesc" class="text-slate-400 leading-relaxed text-[11px]">
+          Leap across the village path and bridge to collect 3 ground spirit orbs. Master basic jump momentum.
+        </p>
+      </div>
+
+      <!-- Engine Toggles -->
+      <div class="grid grid-cols-2 gap-2">
+        <button id="btnToggleHitboxes" class="py-2 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 font-bold flex items-center justify-center gap-2 transition-all">
+          <span id="hitboxIndicator" class="w-2 h-2 rounded-full bg-slate-500"></span>
+          <span>Debug Hitboxes</span>
+        </button>
+        <button id="btnToggleSound" class="py-2 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 font-bold flex items-center justify-center gap-2 transition-all">
+          <span id="soundIcon">🔊</span>
+          <span id="soundLabel">Audio: ON</span>
+        </button>
+        <!-- Active Scene Plate Badge -->
+        <div class="col-span-2 py-2 px-3 rounded-xl bg-slate-900/90 border border-slate-700/80 text-slate-300 font-bold flex items-center justify-between text-[11px] shadow-md">
+          <span class="flex items-center gap-1.5"><span id="sceneIcon">⛩️</span><span class="text-slate-400">Scene Plate:</span></span>
+          <span id="sceneNameLabel" class="font-extrabold text-cyan-300">Torii Shrine HD</span>
+        </div>
+      </div>
+
+      <!-- Keyboard Controls Cheatsheet -->
+      <div class="bg-slate-950/60 rounded-2xl p-3 border border-slate-800/80">
+        <span class="block text-slate-400 font-bold uppercase tracking-wider text-[10px] mb-2">
+          Desktop Keyboard Controls
+        </span>
+        <div class="grid grid-cols-2 gap-x-4 gap-y-1 text-[11px] text-slate-300">
+          <div><kbd class="px-1.5 py-0.5 rounded bg-slate-800 text-amber-300 font-mono">A / D</kbd> : Run</div>
+          <div><kbd class="px-1.5 py-0.5 rounded bg-slate-800 text-amber-300 font-mono">Space</kbd> : Jump</div>
+          <div><kbd class="px-1.5 py-0.5 rounded bg-slate-800 text-amber-300 font-mono">S + Space</kbd> : Drop Platform</div>
+          <div><kbd class="px-1.5 py-0.5 rounded bg-slate-800 text-amber-300 font-mono">X / J</kbd> : Katana Slash</div>
+          <div><kbd class="px-1.5 py-0.5 rounded bg-slate-800 text-amber-300 font-mono">C / K</kbd> : Throw Shuriken</div>
+          <div><kbd class="px-1.5 py-0.5 rounded bg-slate-800 text-amber-300 font-mono">R</kbd> : Restart Level</div>
+        </div>
+      </div>
+
+      <!-- Campaign Reset -->
+      <button id="btnResetProgress" class="py-2 rounded-xl text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition-colors text-[11px] font-bold">
+        Reset All Stars & Progress
+      </button>
+
+    </div>
+
+  </main>
+
+  <!-- Game Simulation JavaScript Engine -->
+  <script>
+    // --- WEB AUDIO SYNTHESIZER ---
+    class SoundEngine {
+      constructor() {
+        this.ctx = null;
+        this.enabled = true;
+      }
+      init() {
+        if (!this.ctx) {
+          const AudioCtx = window.AudioContext || window.webkitAudioContext;
+          if (AudioCtx) this.ctx = new AudioCtx();
+        }
+        if (this.ctx && this.ctx.state === 'suspended') {
+          this.ctx.resume();
+        }
+      }
+      playJump() {
+        if (!this.enabled) return;
+        this.init();
+        if (!this.ctx) return;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(220, this.ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(540, this.ctx.currentTime + 0.15);
+        gain.gain.setValueAtTime(0.2, this.ctx.currentTime);
+        gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.15);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.15);
+      }
+      playSlash() {
+        if (!this.enabled) return;
+        this.init();
+        if (!this.ctx) return;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(600, this.ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(120, this.ctx.currentTime + 0.12);
+        gain.gain.setValueAtTime(0.25, this.ctx.currentTime);
+        gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.12);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.12);
+      }
+      playShuriken() {
+        if (!this.enabled) return;
+        this.init();
+        if (!this.ctx) return;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(800, this.ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(1400, this.ctx.currentTime + 0.08);
+        gain.gain.setValueAtTime(0.2, this.ctx.currentTime);
+        gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.08);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.08);
+      }
+      playOrbPickup() {
+        if (!this.enabled) return;
+        this.init();
+        if (!this.ctx) return;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(587, this.ctx.currentTime);
+        osc.frequency.setValueAtTime(880, this.ctx.currentTime + 0.06);
+        osc.frequency.setValueAtTime(1174, this.ctx.currentTime + 0.12);
+        gain.gain.setValueAtTime(0.3, this.ctx.currentTime);
+        gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.25);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.25);
+      }
+      playLevelClear() {
+        if (!this.enabled) return;
+        this.init();
+        if (!this.ctx) return;
+        const notes = [523.25, 659.25, 783.99, 1046.50];
+        notes.forEach((freq, idx) => {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(freq, this.ctx.currentTime + idx * 0.1);
+          gain.gain.setValueAtTime(0.25, this.ctx.currentTime + idx * 0.1);
+          gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + idx * 0.1 + 0.3);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(this.ctx.currentTime + idx * 0.1);
+          osc.stop(this.ctx.currentTime + idx * 0.1 + 0.3);
+        });
+      }
+    }
+    const audio = new SoundEngine();
+
+    // --- 15 CANONICAL CAMPAIGN LEVELS DEFINITIONS ---
+    const CAMPAIGN_LEVELS = [
+      // ACT I: DAWN VILLAGE
+      {
+        id: '1-1', world: 1, title: 'Opening Shrine: Torii Path',
+        actName: 'ACT I: DAWN VILLAGE',
+        desc: 'Ascend the sunlit sacred Torii shrine path. Walk up the stone stairs to the shrine, leap across the mountain chasm, and climb the grand stairs through the Torii gates.',
+        plate: '../assets/images/stage1_daytime_torii_shrine_1024.png',
+        timeLimit: null,
+        orbs: [
+          {x: 70, y: 220},  // Shrine porch
+          {x: 230, y: 290}, // Left stairs
+          {x: 340, y: 310}, // Cobblestone path
+          {x: 520, y: 290}, // Chasm midair leap
+          {x: 795, y: 240}, // Grand Torii stairs
+          {x: 960, y: 100}  // Mountain temple terrace
+        ],
+        platforms: [
+          {x: 0, y: 350, w: 455, h: 226, dropThrough: false}, // Left Mountain Bluff
+          {x: 585, y: 350, w: 439, h: 226, dropThrough: false}, // Right Mountain Bluff
+          {x: 0, y: 265, w: 140, h: 20, dropThrough: false}, // Left Shrine Terrace Porch
+          {x: 890, y: 150, w: 134, h: 20, dropThrough: false}  // Upper Temple Terrace Landing
+        ],
+        slopes: [
+          {startX: 315, startY: 350, endX: 140, endY: 265, name: 'Left Shrine Stairs'},
+          {startX: 700, startY: 350, endX: 890, endY: 150, name: 'Grand Torii Stairs'}
+        ]
+      },
+      {
+        id: '1-2', world: 1, title: 'Waterfall Ascent: River & Bridge',
+        actName: 'ACT I: DAWN VILLAGE',
+        desc: 'Follow the river gorge past the thundering cascades. Cross the suspended wooden bridge over the rushing rapids to reach the teahouse bank.',
+        plate: '../assets/images/stitch_waterfall_bridge_day_1024.png',
+        timeLimit: null,
+        orbs: [
+          {x: 200, y: 440}, {x: 350, y: 440},
+          {x: 450, y: 335}, {x: 570, y: 335},
+          {x: 720, y: 440}, {x: 880, y: 440}
+        ],
+        platforms: [
+          {x: 0, y: 482, w: 420, h: 94, dropThrough: false},   // Left riverbank ground
+          {x: 580, y: 482, w: 444, h: 94, dropThrough: false}, // Right riverbank ground
+          {x: 0, y: 350, w: 330, h: 20, dropThrough: true},    // Left cottage cliff
+          {x: 320, y: 375, w: 380, h: 18, dropThrough: true},  // Suspended arch bridge
+          {x: 700, y: 350, w: 324, h: 20, dropThrough: true}   // Right teahouse cliff
+        ]
+      },
+      {
+        id: '1-3', world: 1, title: 'Time Trial: Rapids Sprint',
+        actName: 'ACT I: DAWN VILLAGE',
+        desc: 'High-velocity alpine sprint! Traverse the lower riverbanks and the suspension bridge before the 25-second timer expires.',
+        plate: '../assets/images/stitch_waterfall_bridge_day_1024.png',
+        timeLimit: 25,
+        orbs: [
+          {x: 180, y: 440}, {x: 280, y: 310},
+          {x: 512, y: 335}, {x: 650, y: 335},
+          {x: 820, y: 310}, {x: 920, y: 440}
+        ],
+        platforms: [
+          {x: 0, y: 482, w: 420, h: 94, dropThrough: false},
+          {x: 580, y: 482, w: 444, h: 94, dropThrough: false},
+          {x: 0, y: 350, w: 330, h: 20, dropThrough: true},
+          {x: 320, y: 375, w: 380, h: 18, dropThrough: true},
+          {x: 700, y: 350, w: 324, h: 20, dropThrough: true}
+        ]
+      },
+      {
+        id: '1-4', world: 1, title: 'Bridge Patrol: River Gorge',
+        actName: 'ACT I: DAWN VILLAGE',
+        desc: 'Leap across the high mountain bridge and patrol the riverbed. Collect 4 high-value spirit orbs while avoiding the roaring torrent.',
+        plate: '../assets/images/stitch_waterfall_bridge_day_1024.png',
+        timeLimit: null,
+        orbs: [ {x: 160, y: 440}, {x: 480, y: 335}, {x: 540, y: 335}, {x: 850, y: 440} ],
+        platforms: [
+          {x: 0, y: 482, w: 420, h: 94, dropThrough: false},
+          {x: 580, y: 482, w: 444, h: 94, dropThrough: false},
+          {x: 0, y: 350, w: 330, h: 20, dropThrough: true},
+          {x: 320, y: 375, w: 380, h: 18, dropThrough: true},
+          {x: 700, y: 350, w: 324, h: 20, dropThrough: true}
+        ]
+      },
+      {
+        id: '1-5', world: 1, title: 'Grand Cascade Climax',
+        actName: 'ACT I: DAWN VILLAGE',
+        desc: 'The ultimate Waterfall Gorge mastery run! Collect 10 spirit orbs scattered from the high mountain cottage across the arch bridge to the riverbed.',
+        plate: '../assets/images/stitch_waterfall_bridge_day_1024.png',
+        timeLimit: null,
+        orbs: [
+          {x: 120, y: 440}, {x: 200, y: 310}, {x: 300, y: 310},
+          {x: 420, y: 335}, {x: 512, y: 335}, {x: 600, y: 335},
+          {x: 750, y: 310}, {x: 820, y: 310}, {x: 900, y: 440}, {x: 960, y: 440}
+        ],
+        platforms: [
+          {x: 0, y: 482, w: 420, h: 94, dropThrough: false},
+          {x: 580, y: 482, w: 444, h: 94, dropThrough: false},
+          {x: 0, y: 350, w: 330, h: 20, dropThrough: true},
+          {x: 320, y: 375, w: 380, h: 18, dropThrough: true},
+          {x: 700, y: 350, w: 324, h: 20, dropThrough: true}
+        ]
+      },
+
+      // ACT II: NIGHTTIME WATERFALL GORGE
+      {
+        id: '2-1', world: 2, title: 'Twin Bridge Crossing',
+        actName: 'ACT II: WATERFALL GORGE',
+        desc: 'Bioluminescent waterfalls glow beneath the crescent moon. Cross the dual suspension bridges spanning the mystical river chasm.',
+        plate: '../assets/images/level2_night_waterfall_stage_1024.png',
+        timeLimit: null,
+        orbs: [ {x: 140, y: 310}, {x: 335, y: 325}, {x: 480, y: 310}, {x: 640, y: 340}, {x: 840, y: 340} ],
+        platforms: [
+          {x: 0, y: 350, w: 230, h: 226, dropThrough: false},   // Left cliff terrace
+          {x: 230, y: 365, w: 210, h: 20, dropThrough: true},   // Suspended bridge 1
+          {x: 440, y: 350, w: 80, h: 226, dropThrough: false},  // Center stone pier
+          {x: 520, y: 380, w: 240, h: 20, dropThrough: true},   // Suspended bridge 2
+          {x: 760, y: 380, w: 264, h: 196, dropThrough: false}, // Right cliff terrace
+          {x: 820, y: 240, w: 204, h: 20, dropThrough: true}    // Upper right lookout ledge
+        ]
+      },
+      {
+        id: '2-2', world: 2, title: 'Bioluminescent Rapids',
+        actName: 'ACT II: WATERFALL GORGE',
+        desc: 'Cross the hanging rope bridges above the thundering teal rapids. Collect 6 glowing spirit orbs suspended over the abyss.',
+        plate: '../assets/images/level2_night_waterfall_stage_1024.png',
+        timeLimit: null,
+        orbs: [ {x: 120, y: 310}, {x: 290, y: 325}, {x: 390, y: 325}, {x: 480, y: 310}, {x: 600, y: 340}, {x: 880, y: 340} ],
+        platforms: [
+          {x: 0, y: 350, w: 230, h: 226, dropThrough: false},
+          {x: 230, y: 365, w: 210, h: 20, dropThrough: true},
+          {x: 440, y: 350, w: 80, h: 226, dropThrough: false},
+          {x: 520, y: 380, w: 240, h: 20, dropThrough: true},
+          {x: 760, y: 380, w: 264, h: 196, dropThrough: false},
+          {x: 820, y: 240, w: 204, h: 20, dropThrough: true}
+        ]
+      },
+      {
+        id: '2-3', world: 2, title: 'Time Trial: Midnight Surge',
+        actName: 'ACT II: WATERFALL GORGE',
+        desc: 'Speed run through the misty gorge! Collect all 6 orbs across both bridges and the high lookout ledge before 28 seconds elapse.',
+        plate: '../assets/images/level2_night_waterfall_stage_1024.png',
+        timeLimit: 28,
+        orbs: [ {x: 150, y: 310}, {x: 335, y: 325}, {x: 480, y: 310}, {x: 640, y: 340}, {x: 840, y: 340}, {x: 920, y: 200} ],
+        platforms: [
+          {x: 0, y: 350, w: 230, h: 226, dropThrough: false},
+          {x: 230, y: 365, w: 210, h: 20, dropThrough: true},
+          {x: 440, y: 350, w: 80, h: 226, dropThrough: false},
+          {x: 520, y: 380, w: 240, h: 20, dropThrough: true},
+          {x: 760, y: 380, w: 264, h: 196, dropThrough: false},
+          {x: 820, y: 240, w: 204, h: 20, dropThrough: true}
+        ]
+      },
+      {
+        id: '2-4', world: 2, title: 'Cliffside Lookout Gauntlet',
+        actName: 'ACT II: WATERFALL GORGE',
+        desc: 'Navigate narrow platform bridges and scale the upper cliff lookout. Accurate drop-throughs and momentum control are required.',
+        plate: '../assets/images/level2_night_waterfall_stage_1024.png',
+        timeLimit: null,
+        orbs: [ {x: 100, y: 310}, {x: 335, y: 325}, {x: 480, y: 310}, {x: 680, y: 340}, {x: 860, y: 200} ],
+        platforms: [
+          {x: 0, y: 350, w: 230, h: 226, dropThrough: false},
+          {x: 230, y: 365, w: 210, h: 20, dropThrough: true},
+          {x: 440, y: 350, w: 80, h: 226, dropThrough: false},
+          {x: 520, y: 380, w: 240, h: 20, dropThrough: true},
+          {x: 760, y: 380, w: 264, h: 196, dropThrough: false},
+          {x: 820, y: 240, w: 204, h: 20, dropThrough: true}
+        ]
+      },
+      {
+        id: '2-5', world: 2, title: 'Grand Cascade Mastery',
+        actName: 'ACT II: WATERFALL GORGE',
+        desc: 'Conquer the full span of the Nighttime Waterfall Gorge. Collect 8 spirit orbs across both suspension bridges, stone pier, and high lookouts.',
+        plate: '../assets/images/level2_night_waterfall_stage_1024.png',
+        timeLimit: null,
+        orbs: [
+          {x: 80, y: 310}, {x: 180, y: 310}, {x: 335, y: 325},
+          {x: 480, y: 310}, {x: 580, y: 340}, {x: 680, y: 340},
+          {x: 820, y: 340}, {x: 900, y: 200}
+        ],
+        platforms: [
+          {x: 0, y: 350, w: 230, h: 226, dropThrough: false},
+          {x: 230, y: 365, w: 210, h: 20, dropThrough: true},
+          {x: 440, y: 350, w: 80, h: 226, dropThrough: false},
+          {x: 520, y: 380, w: 240, h: 20, dropThrough: true},
+          {x: 760, y: 380, w: 264, h: 196, dropThrough: false},
+          {x: 820, y: 240, w: 204, h: 20, dropThrough: true}
+        ]
+      },
+
+      // ACT III: MIDNIGHT AUTUMN
+      {
+        id: '3-1', world: 3, title: 'Moonlit Arch Bridge',
+        actName: 'ACT III: MIDNIGHT AUTUMN',
+        desc: 'Crescent moon over the autumn maple forest. Leap across the sacred stone arched bridge and stone lanterns.',
+        plate: '../assets/images/level3_cinematic_stage_1024.png',
+        timeLimit: null,
+        orbs: [ {x: 190, y: 430}, {x: 450, y: 420}, {x: 550, y: 420}, {x: 850, y: 430} ],
+        platforms: [
+          {x: 0, y: 440, w: 340, h: 40, dropThrough: false},
+          {x: 380, y: 430, w: 260, h: 20, dropThrough: true}, // Arched stone bridge
+          {x: 680, y: 440, w: 344, h: 40, dropThrough: false},
+          {x: 160, y: 260, w: 140, h: 15, dropThrough: true},
+          {x: 440, y: 260, w: 140, h: 15, dropThrough: true},
+          {x: 770, y: 260, w: 140, h: 15, dropThrough: true}
+        ]
+      },
+      {
+        id: '3-2', world: 3, title: 'Kitsune Statue Perch',
+        actName: 'ACT III: MIDNIGHT AUTUMN',
+        desc: 'Leap atop sacred fox statues and chochin lanterns. Collect 6 mystical spirit orbs hidden under crimson foliage.',
+        plate: '../assets/images/level3_cinematic_stage_1024.png',
+        timeLimit: null,
+        orbs: [ {x: 220, y: 240}, {x: 290, y: 430}, {x: 490, y: 240}, {x: 520, y: 420}, {x: 790, y: 240}, {x: 880, y: 430} ],
+        platforms: [
+          {x: 0, y: 440, w: 340, h: 40, dropThrough: false},
+          {x: 380, y: 430, w: 260, h: 20, dropThrough: true},
+          {x: 680, y: 440, w: 344, h: 40, dropThrough: false},
+          {x: 160, y: 260, w: 140, h: 15, dropThrough: true},
+          {x: 440, y: 260, w: 140, h: 15, dropThrough: true},
+          {x: 770, y: 260, w: 140, h: 15, dropThrough: true}
+        ]
+      },
+      {
+        id: '3-3', world: 3, title: 'Time Trial: Midnight Gale',
+        actName: 'ACT III: MIDNIGHT AUTUMN',
+        desc: 'Ghostly winds! Sprint through the midnight autumn fog collecting 6 orbs in under 22 seconds.',
+        plate: '../assets/images/level3_cinematic_stage_1024.png',
+        timeLimit: 22,
+        orbs: [ {x: 160, y: 430}, {x: 240, y: 240}, {x: 480, y: 240}, {x: 540, y: 420}, {x: 800, y: 240}, {x: 920, y: 430} ],
+        platforms: [
+          {x: 0, y: 440, w: 340, h: 40, dropThrough: false},
+          {x: 380, y: 430, w: 260, h: 20, dropThrough: true},
+          {x: 680, y: 440, w: 344, h: 40, dropThrough: false},
+          {x: 160, y: 260, w: 140, h: 15, dropThrough: true},
+          {x: 440, y: 260, w: 140, h: 15, dropThrough: true},
+          {x: 770, y: 260, w: 140, h: 15, dropThrough: true}
+        ]
+      },
+      {
+        id: '3-4', world: 3, title: 'Shuriken Razor Pass',
+        actName: 'ACT III: MIDNIGHT AUTUMN',
+        desc: 'Spinning ninja shuriken traps cut across the moonlight river. Deflect or dodge while retrieving 6 ancient relics.',
+        plate: '../assets/images/level3_cinematic_stage_1024.png',
+        timeLimit: null,
+        orbs: [ {x: 180, y: 430}, {x: 220, y: 240}, {x: 460, y: 240}, {x: 560, y: 240}, {x: 790, y: 240}, {x: 860, y: 430} ],
+        platforms: [
+          {x: 0, y: 440, w: 340, h: 40, dropThrough: false},
+          {x: 380, y: 430, w: 260, h: 20, dropThrough: true},
+          {x: 680, y: 440, w: 344, h: 40, dropThrough: false},
+          {x: 160, y: 260, w: 140, h: 15, dropThrough: true},
+          {x: 440, y: 260, w: 140, h: 15, dropThrough: true},
+          {x: 770, y: 260, w: 140, h: 15, dropThrough: true}
+        ]
+      },
+      {
+        id: '3-5', world: 3, title: 'Grand Shinobi Master Trial',
+        actName: 'ACT III: MIDNIGHT AUTUMN',
+        desc: 'The Campaign Finale! 10 spirit orbs scattered throughout the sacred forest. Master every ninja discipline.',
+        plate: '../assets/images/level3_cinematic_stage_1024.png',
+        timeLimit: null,
+        orbs: [
+          {x: 100, y: 430}, {x: 200, y: 240}, {x: 280, y: 430},
+          {x: 440, y: 240}, {x: 512, y: 420}, {x: 580, y: 240},
+          {x: 720, y: 430}, {x: 810, y: 240}, {x: 900, y: 240}, {x: 970, y: 430}
+        ],
+        platforms: [
+          {x: 0, y: 440, w: 340, h: 40, dropThrough: false},
+          {x: 380, y: 430, w: 260, h: 20, dropThrough: true},
+          {x: 680, y: 440, w: 344, h: 40, dropThrough: false},
+          {x: 160, y: 260, w: 140, h: 15, dropThrough: true},
+          {x: 440, y: 260, w: 140, h: 15, dropThrough: true},
+          {x: 770, y: 260, w: 140, h: 15, dropThrough: true}
+        ]
+      }
+    ];
+
+    // --- GAME ENGINE STATE ---
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+
+    let currentLevelIndex = 0;
+    let currentLevel = CAMPAIGN_LEVELS[0];
+    let levelProgress = JSON.parse(localStorage.getItem('shinobi_campaign_stars') || '{}');
+
+    let debugHitboxes = false;
+    let isStageCleared = false;
+    let isTimeUp = false;
+    let levelStartTime = Date.now();
+    let remainingTime = 0;
+    let timerInterval = null;
+
+    // Master plate image cache
+    const plateImages = {};
+    CAMPAIGN_LEVELS.forEach(lvl => {
+      if (!plateImages[lvl.plate]) {
+        const img = new Image();
+        img.src = lvl.plate;
+        img.onerror = () => {
+          if (lvl.plate.startsWith('../')) {
+            img.src = lvl.plate.substring(3);
+          } else {
+            img.src = '../' + lvl.plate;
+          }
+        };
+        plateImages[lvl.plate] = img;
+      }
+    });
+
+    // Preload Stage Plates for Act I & Biomes
+    ['../assets/images/stitch_waterfall_bridge_day_1024.png', '../assets/images/stitch_bamboo_bg_80ad_1024.png', '../assets/images/stitch_bamboo_bg_984c_1024.png'].forEach(p => {
+      const img = new Image();
+      img.src = p;
+      img.onerror = () => { img.src = p.substring(3); };
+      plateImages[p] = img;
+    });
+
+    // Official Clean Chibi Ninja Sprite Sheet
+    const ninjaSpriteSheet = new Image();
+    ninjaSpriteSheet.src = '../assets/images/clean_chibi_ninja.png';
+    ninjaSpriteSheet.onerror = () => {
+      ninjaSpriteSheet.src = 'assets/images/clean_chibi_ninja.png';
+    };
+
+    const NINJA_FRAMES = {
+      idle: [
+        { sx: 31, sy: 30, sw: 110, sh: 196 },
+        { sx: 224, sy: 30, sw: 113, sh: 196 },
+        { sx: 416, sy: 30, sw: 115, sh: 196 },
+        { sx: 608, sy: 30, sw: 111, sh: 196 }
+      ],
+      run: [
+        { sx: 21, sy: 279, sw: 117, sh: 194 },
+        { sx: 174, sy: 279, sw: 121, sh: 194 },
+        { sx: 323, sy: 279, sw: 125, sh: 194 },
+        { sx: 483, sy: 279, sw: 118, sh: 194 },
+        { sx: 635, sy: 279, sw: 115, sh: 194 }
+      ],
+      jump: [
+        { sx: 40, sy: 545, sw: 117, sh: 195 },
+        { sx: 229, sy: 518, sw: 116, sh: 207 },
+        { sx: 414, sy: 512, sw: 121, sh: 196 },
+        { sx: 601, sy: 548, sw: 131, sh: 192 }
+      ],
+      attack: [
+        { sx: 41, sy: 804, sw: 134, sh: 191 },
+        { sx: 180, sy: 804, sw: 169, sh: 191 },
+        { sx: 349, sy: 804, sw: 211, sh: 191 },
+        { sx: 560, sy: 804, sw: 200, sh: 191 }
+      ]
+    };
+
+    // Player State (Physics scaled for 1024x576 virtual stage coordinates)
+    const player = {
+      x: 80,
+      y: 400,
+      vx: 0,
+      vy: 0,
+      w: 48,
+      h: 56,
+      isGrounded: false,
+      facingRight: true,
+      isSlashing: false,
+      slashTimer: 0,
+      dropThroughActive: false,
+      dropThroughTimer: 0,
+      animFrame: 0,
+      animTimer: 0
+    };
+
+    // Projectiles & Particles
+    let activeShurikens = [];
+    let particles = [];
+    let orbs = [];
+
+    // Controller input flags
+    const keys = {
+      left: false,
+      right: false,
+      jump: false,
+      drop: false,
+      slash: false,
+      throw: false
+    };
+
+    // Virtual stage dimensions matching the Flame 16:9 plates
+    const VIRTUAL_WIDTH = 1024;
+    const VIRTUAL_HEIGHT = 576;
+
+    // --- INIT LEVEL ---
+    function loadLevel(index) {
+      if (index < 0 || index >= CAMPAIGN_LEVELS.length) index = 0;
+      currentLevelIndex = index;
+      currentLevel = CAMPAIGN_LEVELS[index];
+
+      // Reset Player to world ground baseline
+      if (currentLevel.world === 1) {
+        if (currentLevel.id === '1-1') {
+          player.x = 340;
+          player.y = 350 - player.h;
+        } else {
+          player.x = 80;
+          player.y = 482 - player.h;
+        }
+      } else if (currentLevel.world === 2) {
+        player.x = 80;
+        player.y = 350 - player.h;
+      } else {
+        player.x = 80;
+        player.y = 440 - player.h;
+      }
+      player.vx = 0;
+      player.vy = 0;
+      player.isGrounded = true;
+      player.isSlashing = false;
+      player.dropThroughActive = false;
+
+      // Orbs
+      orbs = currentLevel.orbs.map(o => ({
+        x: o.x,
+        y: o.y,
+        radius: 12,
+        collected: false,
+        pulseOffset: Math.random() * Math.PI * 2
+      }));
+
+      // Projectiles & particles reset
+      activeShurikens = [];
+      particles = [];
+
+      isStageCleared = false;
+      isTimeUp = false;
+      levelStartTime = Date.now();
+
+      // Time trial setup
+      clearInterval(timerInterval);
+      const timerPill = document.getElementById('hudTimerPill');
+      if (currentLevel.timeLimit) {
+        remainingTime = currentLevel.timeLimit;
+        timerPill.classList.remove('hidden');
+        timerPill.classList.add('flex');
+        document.getElementById('hudTimerVal').textContent = `${remainingTime}s`;
+
+        timerInterval = setInterval(() => {
+          if (isStageCleared || isTimeUp) return;
+          remainingTime--;
+          document.getElementById('hudTimerVal').textContent = `${remainingTime}s`;
+          if (remainingTime <= 0) {
+            clearInterval(timerInterval);
+            triggerTimeUp();
+          }
+        }, 1000);
+      } else {
+        timerPill.classList.add('hidden');
+        timerPill.classList.remove('flex');
+      }
+
+      // Dialogs hide
+      document.getElementById('clearDialog').classList.add('hidden');
+      document.getElementById('clearDialog').classList.remove('flex');
+      document.getElementById('timeUpDialog').classList.add('hidden');
+      document.getElementById('timeUpDialog').classList.remove('flex');
+      document.getElementById('stageSelectModal').classList.add('hidden');
+      document.getElementById('stageSelectModal').classList.remove('flex');
+
+      // Update HUD & Details
+      updateHUD();
+      updateInfoPanel();
+    }
+
+    function updateHUD() {
+      document.getElementById('hudLevelBadge').textContent = currentLevel.id;
+      document.getElementById('hudLevelTitle').textContent = currentLevel.title;
+      const collected = orbs.filter(o => o.collected).length;
+      document.getElementById('hudOrbsVal').textContent = `${collected}/${orbs.length}`;
+    }
+
+    function updateInfoPanel() {
+      document.getElementById('selectQuickLevel').value = currentLevelIndex;
+      document.getElementById('infoActPill').textContent = currentLevel.actName;
+      document.getElementById('infoTitle').textContent = `${currentLevel.id}: ${currentLevel.title}`;
+      document.getElementById('infoDesc').textContent = currentLevel.desc;
+
+      const trialPill = document.getElementById('infoTrialPill');
+      if (currentLevel.timeLimit) {
+        trialPill.textContent = `⏱️ ${currentLevel.timeLimit}s TRIAL`;
+        trialPill.classList.remove('hidden');
+      } else {
+        trialPill.classList.add('hidden');
+      }
+
+      // Update Active Scene Plate Badge
+      const sceneLabel = document.getElementById('sceneNameLabel');
+      const sceneIcon = document.getElementById('sceneIcon');
+      if (sceneLabel && sceneIcon) {
+        if (currentLevel.plate.includes('stage1_daytime_torii_shrine')) {
+          sceneIcon.textContent = '⛩️';
+          sceneLabel.textContent = 'Daytime Torii Shrine Path';
+          sceneLabel.className = 'font-extrabold text-amber-300';
+        } else if (currentLevel.plate.includes('level2_night_waterfall')) {
+          sceneIcon.textContent = '🌊';
+          sceneLabel.textContent = 'Nighttime Waterfall Gorge';
+          sceneLabel.className = 'font-extrabold text-indigo-300';
+        } else if (currentLevel.plate.includes('waterfall')) {
+          sceneIcon.textContent = '🌊';
+          sceneLabel.textContent = 'Waterfall & Arch Bridge';
+          sceneLabel.className = 'font-extrabold text-cyan-300';
+        } else if (currentLevel.plate.includes('torii')) {
+          sceneIcon.textContent = '⛩️';
+          sceneLabel.textContent = 'Dawn Torii Shrine HD';
+          sceneLabel.className = 'font-extrabold text-rose-300';
+        } else if (currentLevel.plate.includes('level2')) {
+          sceneIcon.textContent = '🌅';
+          sceneLabel.textContent = 'Twilight Sanctuary Ridge';
+          sceneLabel.className = 'font-extrabold text-amber-300';
+        } else if (currentLevel.plate.includes('level3')) {
+          sceneIcon.textContent = '🍁';
+          sceneLabel.textContent = 'Midnight Autumn Pagoda';
+          sceneLabel.className = 'font-extrabold text-purple-300';
+        }
+      }
+    }
+
+    function triggerLevelClear() {
+      if (isStageCleared) return;
+      isStageCleared = true;
+      clearInterval(timerInterval);
+      audio.playLevelClear();
+
+      const elapsed = ((Date.now() - levelStartTime) / 1000).toFixed(1);
+      const collected = orbs.filter(o => o.collected).length;
+      let stars = 1; // Star 1: Completion
+      if (collected >= orbs.length) stars++; // Star 2: All orbs
+      if (currentLevel.timeLimit ? remainingTime >= 3 : elapsed < 35.0) stars++; // Star 3: Par
+
+      // Save progression
+      const prevStars = levelProgress[currentLevel.id] || 0;
+      if (stars > prevStars) {
+        levelProgress[currentLevel.id] = stars;
+        localStorage.setItem('shinobi_campaign_stars', JSON.stringify(levelProgress));
+      }
+
+      // Calculate total stars
+      let totalStars = 0;
+      Object.values(levelProgress).forEach(s => totalStars += s);
+
+      // Populate clear dialog
+      document.getElementById('clearActBadge').textContent = currentLevel.actName;
+      document.getElementById('clearLevelTitle').textContent = `LEVEL ${currentLevel.id} CLEARED!`;
+      document.getElementById('clearOrbsVal').textContent = `${collected}/${orbs.length}`;
+      document.getElementById('clearTimeVal').textContent = `${elapsed}s`;
+      document.getElementById('clearTotalStars').textContent = `${totalStars} / 45`;
+
+      // Render Star icons with animations
+      ['star1', 'star2', 'star3'].forEach((id, idx) => {
+        const el = document.getElementById(id);
+        el.className = 'text-3xl filter drop-shadow';
+        if (idx < stars) {
+          el.textContent = '⭐';
+          el.classList.add('animate-star');
+        } else {
+          el.textContent = '🌑';
+        }
+      });
+
+      const clearDialog = document.getElementById('clearDialog');
+      clearDialog.classList.remove('hidden');
+      clearDialog.classList.add('flex');
+    }
+
+    function triggerTimeUp() {
+      if (isTimeUp || isStageCleared) return;
+      isTimeUp = true;
+      const timeUpDialog = document.getElementById('timeUpDialog');
+      timeUpDialog.classList.remove('hidden');
+      timeUpDialog.classList.add('flex');
+    }
+
+    // --- GAME LOOP & PHYSICS ---
+    let lastTime = performance.now();
+    let frameCount = 0;
+    let fpsTime = performance.now();
+
+    function gameLoop(now) {
+      const dt = Math.min((now - lastTime) / 1000, 0.1);
+      lastTime = now;
+
+      // FPS badge
+      frameCount++;
+      if (now - fpsTime >= 1000) {
+        document.getElementById('fpsBadge').textContent = `${frameCount} FPS`;
+        frameCount = 0;
+        fpsTime = now;
+      }
+
+      update(dt);
+      render();
+
+      requestAnimationFrame(gameLoop);
+    }
+
+    function update(dt) {
+      if (isStageCleared || isTimeUp) return;
+
+      // Horizontal movement
+      const moveSpeed = 240;
+      if (keys.left) {
+        player.vx = -moveSpeed;
+        player.facingRight = false;
+      } else if (keys.right) {
+        player.vx = moveSpeed;
+        player.facingRight = true;
+      } else {
+        player.vx *= 0.75; // Friction
+        if (Math.abs(player.vx) < 5) player.vx = 0;
+      }
+
+      // Jump
+      if (keys.jump && player.isGrounded) {
+        player.vy = -480;
+        player.isGrounded = false;
+        audio.playJump();
+      }
+
+      // Drop Through Platforms
+      if (keys.drop) {
+        player.dropThroughActive = true;
+        player.dropThroughTimer = 0.25;
+      }
+      if (player.dropThroughActive) {
+        player.dropThroughTimer -= dt;
+        if (player.dropThroughTimer <= 0) player.dropThroughActive = false;
+      }
+
+      // Gravity
+      player.vy += 980 * dt;
+      if (player.vy > 650) player.vy = 650;
+
+      // Integrate position
+      player.x += player.vx * dt;
+      player.y += player.vy * dt;
+
+      // World bounds
+      if (player.x < 16) player.x = 16;
+      if (player.x > VIRTUAL_WIDTH - player.w - 16) player.x = VIRTUAL_WIDTH - player.w - 16;
+
+      // Platform & Slope Collisions
+      player.isGrounded = false;
+      const feetY = player.y + player.h;
+      const prevFeetY = feetY - player.vy * dt;
+
+      // 1. Slope & Staircase Travel Paths (Ascending / Descending Ramp Physics)
+      let onSlope = false;
+      if (currentLevel.slopes && !player.dropThroughActive) {
+        for (const slope of currentLevel.slopes) {
+          const minX = Math.min(slope.startX, slope.endX);
+          const maxX = Math.max(slope.startX, slope.endX);
+          const midX = player.x + player.w / 2;
+
+          if (midX >= minX && midX <= maxX) {
+            const t = (midX - slope.startX) / (slope.endX - slope.startX);
+            const rampY = slope.startY + t * (slope.endY - slope.startY);
+
+            // Snap onto slope when walking or landing (allow step-up & step-down tolerance)
+            if (player.vy >= 0 && feetY >= rampY - 14 && feetY <= rampY + 22) {
+              player.y = rampY - player.h;
+              player.vy = 0;
+              player.isGrounded = true;
+              onSlope = true;
+              break;
+            }
+          }
+        }
+      }
+
+      // 2. Flat Platforms & Ground Baselines
+      if (!onSlope) {
+        for (const p of currentLevel.platforms) {
+          const inX = player.x + player.w > p.x && player.x < p.x + p.w;
+          if (!inX) continue;
+
+          if (p.dropThrough) {
+            if (!player.dropThroughActive && player.vy >= 0 && prevFeetY <= p.y + 8 && feetY >= p.y) {
+              player.y = p.y - player.h;
+              player.vy = 0;
+              player.isGrounded = true;
+              break;
+            }
+          } else {
+            // Solid ground
+            if (player.vy >= 0 && feetY >= p.y && prevFeetY <= p.y + 16) {
+              player.y = p.y - player.h;
+              player.vy = 0;
+              player.isGrounded = true;
+              break;
+            }
+          }
+        }
+      }
+
+      // Chasm Fall Check
+      if (player.y > VIRTUAL_HEIGHT + 60) {
+        // Respawn cleanly at stage entrance
+        loadLevel(currentLevelIndex);
+      }
+
+      // Katana Slash timer
+      if (player.isSlashing) {
+        player.slashTimer -= dt;
+        if (player.slashTimer <= 0) player.isSlashing = false;
+      }
+
+      // Update animation cycle
+      player.animTimer += dt;
+      let animSpeed = 0.14;
+      if (player.isSlashing) {
+        animSpeed = 0.05;
+      } else if (!player.isGrounded) {
+        animSpeed = 0.12;
+      } else if (Math.abs(player.vx) > 10) {
+        animSpeed = 0.08;
+      } else {
+        animSpeed = 0.18;
+      }
+      if (player.animTimer >= animSpeed) {
+        player.animTimer = 0;
+        player.animFrame++;
+      }
+
+      // Update Shurikens
+      for (let i = activeShurikens.length - 1; i >= 0; i--) {
+        const s = activeShurikens[i];
+        s.x += s.vx * dt;
+        s.angle += 25 * dt;
+        s.life -= dt;
+        if (s.life <= 0 || s.x < 0 || s.x > VIRTUAL_WIDTH) {
+          activeShurikens.splice(i, 1);
+        }
+      }
+
+      // Check Spirit Orb Collisions
+      const px = player.x + player.w / 2;
+      const py = player.y + player.h / 2;
+      let newlyCollected = false;
+
+      orbs.forEach(orb => {
+        if (orb.collected) return;
+        const dx = orb.x - px;
+        const dy = orb.y - py;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < orb.radius + 22) {
+          orb.collected = true;
+          newlyCollected = true;
+          audio.playOrbPickup();
+
+          // Spawn burst particles
+          for (let k = 0; k < 12; k++) {
+            particles.push({
+              x: orb.x,
+              y: orb.y,
+              vx: (Math.random() - 0.5) * 200,
+              vy: (Math.random() - 0.5) * 200,
+              life: 0.4 + Math.random() * 0.3,
+              maxLife: 0.7,
+              color: '#F59E0B'
+            });
+          }
+        }
+      });
+
+      if (newlyCollected) {
+        updateHUD();
+        const remaining = orbs.filter(o => !o.collected).length;
+        if (remaining === 0) {
+          triggerLevelClear();
+        }
+      }
+
+      // Update Particles
+      for (let i = particles.length - 1; i >= 0; i--) {
+        const pt = particles[i];
+        pt.x += pt.vx * dt;
+        pt.y += pt.vy * dt;
+        pt.life -= dt;
+        if (pt.life <= 0) particles.splice(i, 1);
+      }
+    }
+
+    // --- RENDER PASS (Camera follows Ninja across 1024x576) ---
+    function render() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Camera calculations (Fit 16:9 virtual world onto mobile canvas)
+      const scale = canvas.width / (VIRTUAL_WIDTH * 0.45); // Zoomed in mobile feel
+      let cameraX = player.x - (canvas.width / scale) / 2;
+      cameraX = Math.max(0, Math.min(cameraX, VIRTUAL_WIDTH - canvas.width / scale));
+
+      ctx.save();
+      ctx.scale(scale, scale);
+      ctx.translate(-cameraX, 0);
+
+      // 1. Draw Master Cinematic Stage Plate Texture
+      const plateImg = plateImages[currentLevel.plate];
+      if (plateImg && plateImg.complete && plateImg.naturalWidth > 0) {
+        ctx.drawImage(plateImg, 0, 0, VIRTUAL_WIDTH, VIRTUAL_HEIGHT);
+      } else {
+        // Fallback procedural feudal backdrop
+        const grad = ctx.createLinearGradient(0, 0, 0, VIRTUAL_HEIGHT);
+        if (currentLevel.world === 1) {
+          grad.addColorStop(0, '#0284C7'); grad.addColorStop(1, '#064E3B');
+        } else if (currentLevel.world === 2) {
+          grad.addColorStop(0, '#D97706'); grad.addColorStop(1, '#451A03');
+        } else {
+          grad.addColorStop(0, '#0F172A'); grad.addColorStop(1, '#4C0519');
+        }
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, VIRTUAL_WIDTH, VIRTUAL_HEIGHT);
+      }
+
+      // 2. Draw Platforms & Slopes (if Debug Hitboxes enabled)
+      if (debugHitboxes) {
+        ctx.lineWidth = 2;
+        currentLevel.platforms.forEach(p => {
+          ctx.strokeStyle = p.dropThrough ? 'rgba(245, 158, 11, 0.8)' : 'rgba(16, 185, 129, 0.8)';
+          ctx.fillStyle = p.dropThrough ? 'rgba(245, 158, 11, 0.2)' : 'rgba(16, 185, 129, 0.2)';
+          ctx.fillRect(p.x, p.y, p.w, p.h);
+          ctx.strokeRect(p.x, p.y, p.w, p.h);
+        });
+
+        // Draw Slope & Stair Travel Paths
+        if (currentLevel.slopes) {
+          ctx.lineWidth = 4;
+          ctx.strokeStyle = '#06B6D4'; // Vibrant Cyan for stair paths
+          currentLevel.slopes.forEach(s => {
+            ctx.beginPath();
+            ctx.moveTo(s.startX, s.startY);
+            ctx.lineTo(s.endX, s.endY);
+            ctx.stroke();
+          });
+        }
+      }
+
+      // 3. Draw Spirit Orbs
+      const time = performance.now() / 1000;
+      orbs.forEach(orb => {
+        if (orb.collected) return;
+        const bob = Math.sin(time * 3 + orb.pulseOffset) * 4;
+        const oy = orb.y + bob;
+
+        // Glowing halo
+        const radGrad = ctx.createRadialGradient(orb.x, oy, 2, orb.x, oy, orb.radius * 2);
+        radGrad.addColorStop(0, '#FDE68A');
+        radGrad.addColorStop(0.4, 'rgba(245, 158, 11, 0.7)');
+        radGrad.addColorStop(1, 'rgba(245, 158, 11, 0)');
+        ctx.fillStyle = radGrad;
+        ctx.beginPath();
+        ctx.arc(orb.x, oy, orb.radius * 2, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Core orb
+        ctx.fillStyle = '#FFFBEB';
+        ctx.beginPath();
+        ctx.arc(orb.x, oy, orb.radius * 0.7, 0, Math.PI * 2);
+        ctx.fill();
+      });
+
+      // 4. Draw Shurikens
+      activeShurikens.forEach(s => {
+        ctx.save();
+        ctx.translate(s.x, s.y);
+        ctx.rotate(s.angle);
+        ctx.fillStyle = '#38BDF8';
+        ctx.shadowColor = '#0284C7';
+        ctx.shadowBlur = 8;
+        // Draw 4-point ninja star
+        ctx.beginPath();
+        for (let i = 0; i < 4; i++) {
+          ctx.lineTo(Math.cos(i * Math.PI / 2) * 10, Math.sin(i * Math.PI / 2) * 10);
+          ctx.lineTo(Math.cos(i * Math.PI / 2 + Math.PI / 4) * 3, Math.sin(i * Math.PI / 2 + Math.PI / 4) * 3);
+        }
+        ctx.closePath();
+        ctx.fill();
+        ctx.restore();
+      });
+
+      // 5. Draw Particles
+      particles.forEach(pt => {
+        const alpha = Math.max(0, pt.life / pt.maxLife);
+        ctx.fillStyle = pt.color;
+        ctx.globalAlpha = alpha;
+        ctx.beginPath();
+        ctx.arc(pt.x, pt.y, 3 * alpha, 0, Math.PI * 2);
+        ctx.fill();
+      });
+      ctx.globalAlpha = 1.0;
+
+      // 6. Draw Ninja Shinobi Player (Official clean_chibi_ninja.png)
+      ctx.save();
+      ctx.translate(player.x + player.w / 2, player.y + player.h / 2);
+      if (!player.facingRight) ctx.scale(-1, 1);
+
+      // Determine animation state & frame
+      let animSeq = NINJA_FRAMES.idle;
+      if (player.isSlashing) {
+        animSeq = NINJA_FRAMES.attack;
+      } else if (!player.isGrounded) {
+        animSeq = NINJA_FRAMES.jump;
+      } else if (Math.abs(player.vx) > 10) {
+        animSeq = NINJA_FRAMES.run;
+      }
+
+      const frameIdx = player.animFrame % animSeq.length;
+      const f = animSeq[frameIdx];
+
+      if (ninjaSpriteSheet.complete && ninjaSpriteSheet.naturalWidth > 0) {
+        // Draw the authentic chibi blue ninja sprite from clean_chibi_ninja.png
+        const aspect = f.sw / f.sh;
+        const drawH = player.h * 1.25;
+        const drawW = drawH * aspect;
+        ctx.drawImage(
+          ninjaSpriteSheet,
+          f.sx, f.sy, f.sw, f.sh,
+          -drawW / 2, -player.h / 2 - 6, drawW, drawH
+        );
+      } else {
+        // Fallback chibi blue ninja silhouette
+        ctx.fillStyle = '#1E3A8A';
+        ctx.beginPath();
+        ctx.roundRect(-player.w / 2, -player.h / 2, player.w, player.h, 12);
+        ctx.fill();
+
+        // Silver star headband
+        ctx.fillStyle = '#CBD5E1';
+        ctx.fillRect(-player.w / 2 + 2, -player.h / 2 + 8, player.w - 4, 6);
+        ctx.fillStyle = '#FEF08A';
+        ctx.fillRect(4, -player.h / 2 + 10, 8, 3);
+      }
+
+      ctx.restore();
+
+      ctx.restore();
+    }
+
+    // --- CONTROLLER BINDINGS ---
+    function attack() {
+      player.isSlashing = true;
+      player.slashTimer = 0.18;
+      audio.playSlash();
+    }
+
+    function throwShuriken() {
+      const dir = player.facingRight ? 1 : -1;
+      activeShurikens.push({
+        x: player.x + (player.facingRight ? player.w + 4 : -4),
+        y: player.y + player.h / 2,
+        vx: dir * 550,
+        angle: 0,
+        life: 1.5
+      });
+      audio.playShuriken();
+    }
+
+    // Touch Buttons
+    const bindBtn = (id, onDown, onUp) => {
+      const el = document.getElementById(id);
+      const start = (e) => { e.preventDefault(); onDown(); };
+      const end = (e) => { e.preventDefault(); onUp(); };
+      el.addEventListener('mousedown', start);
+      el.addEventListener('mouseup', end);
+      el.addEventListener('mouseleave', end);
+      el.addEventListener('touchstart', start, {passive: false});
+      el.addEventListener('touchend', end, {passive: false});
+      el.addEventListener('touchcancel', end, {passive: false});
+    };
+
+    bindBtn('btnLeft', () => keys.left = true, () => keys.left = false);
+    bindBtn('btnRight', () => keys.right = true, () => keys.right = false);
+    bindBtn('btnJump', () => { keys.jump = true; }, () => { keys.jump = false; });
+    bindBtn('btnDrop', () => { keys.drop = true; }, () => { keys.drop = false; });
+    bindBtn('btnSlash', () => attack(), () => {});
+    bindBtn('btnThrow', () => throwShuriken(), () => {});
+
+    // Desktop Keyboard
+    window.addEventListener('keydown', (e) => {
+      if (e.repeat) return;
+      if (e.code === 'KeyA' || e.code === 'ArrowLeft') keys.left = true;
+      if (e.code === 'KeyD' || e.code === 'ArrowRight') keys.right = true;
+      if (e.code === 'Space' || e.code === 'KeyW' || e.code === 'ArrowUp') keys.jump = true;
+      if (e.code === 'KeyS' || e.code === 'ArrowDown') keys.drop = true;
+      if (e.code === 'KeyX' || e.code === 'KeyJ') attack();
+      if (e.code === 'KeyC' || e.code === 'KeyK') throwShuriken();
+      if (e.code === 'KeyR') loadLevel(currentLevelIndex);
+    });
+
+    window.addEventListener('keyup', (e) => {
+      if (e.code === 'KeyA' || e.code === 'ArrowLeft') keys.left = false;
+      if (e.code === 'KeyD' || e.code === 'ArrowRight') keys.right = false;
+      if (e.code === 'Space' || e.code === 'KeyW' || e.code === 'ArrowUp') keys.jump = false;
+      if (e.code === 'KeyS' || e.code === 'ArrowDown') keys.drop = false;
+    });
+
+    // --- UI MODALS & CONTROLS ---
+    document.getElementById('btnRetryLevel').addEventListener('click', () => loadLevel(currentLevelIndex));
+    document.getElementById('btnRetryTimeUp').addEventListener('click', () => loadLevel(currentLevelIndex));
+    document.getElementById('btnNextLevel').addEventListener('click', () => {
+      loadLevel((currentLevelIndex + 1) % CAMPAIGN_LEVELS.length);
+    });
+
+    // Quick Level Select Dropdown
+    const selectQuickLevel = document.getElementById('selectQuickLevel');
+    CAMPAIGN_LEVELS.forEach((lvl, idx) => {
+      const opt = document.createElement('option');
+      opt.value = idx;
+      opt.textContent = `${lvl.id}: ${lvl.title} (${lvl.actName.split(':')[0]})`;
+      selectQuickLevel.appendChild(opt);
+    });
+    selectQuickLevel.addEventListener('change', (e) => loadLevel(parseInt(e.target.value)));
+
+    // Stage Select Modal
+    const stageSelectModal = document.getElementById('stageSelectModal');
+    document.getElementById('btnOpenStageSelect').addEventListener('click', () => {
+      renderStageSelectLevels(1);
+      stageSelectModal.classList.remove('hidden');
+      stageSelectModal.classList.add('flex');
+    });
+    document.getElementById('btnCloseStageSelect').addEventListener('click', () => {
+      stageSelectModal.classList.add('hidden');
+      stageSelectModal.classList.remove('flex');
+    });
+
+    // Act Tabs in Modal
+    let selectedActTab = 1;
+    function renderStageSelectLevels(actNumber) {
+      selectedActTab = actNumber;
+      ['tabAct1', 'tabAct2', 'tabAct3'].forEach((tid, idx) => {
+        const btn = document.getElementById(tid);
+        if (idx + 1 === actNumber) {
+          btn.className = 'py-1.5 rounded-lg text-[10px] font-bold bg-emerald-600 text-white transition-all';
+        } else {
+          btn.className = 'py-1.5 rounded-lg text-[10px] font-bold text-slate-400 hover:text-white transition-all';
+        }
+      });
+
+      // Total stars count
+      let totalStars = 0;
+      Object.values(levelProgress).forEach(s => totalStars += s);
+      document.getElementById('modalStarsCounter').textContent = `⭐ ${totalStars} / 45`;
+
+      const listContainer = document.getElementById('levelsListContainer');
+      listContainer.innerHTML = '';
+
+      const actLevels = CAMPAIGN_LEVELS.filter(l => l.world === actNumber);
+      actLevels.forEach(lvl => {
+        const stars = levelProgress[lvl.id] || 0;
+        const card = document.createElement('div');
+        card.className = 'p-3 rounded-2xl bg-slate-900 border border-slate-800 hover:border-slate-700 flex items-center justify-between cursor-pointer transition-all active:scale-98';
+        card.innerHTML = `
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="px-1.5 py-0.5 rounded text-[10px] font-black bg-slate-800 text-amber-300 font-mono">${lvl.id}</span>
+              <span class="text-xs font-bold text-white">${lvl.title}</span>
+            </div>
+            <p class="text-[10px] text-slate-400 mt-0.5 line-clamp-1">${lvl.desc}</p>
+          </div>
+          <div class="text-right">
+            <span class="text-xs">${stars > 0 ? '⭐'.repeat(stars) + '🌑'.repeat(3 - stars) : '🌑🌑🌑'}</span>
+            <span class="block text-[9px] text-emerald-400 font-bold mt-0.5">PLAY</span>
+          </div>
+        `;
+        card.addEventListener('click', () => {
+          const globalIdx = CAMPAIGN_LEVELS.findIndex(l => l.id === lvl.id);
+          loadLevel(globalIdx);
+        });
+        listContainer.appendChild(card);
+      });
+    }
+
+    document.getElementById('tabAct1').addEventListener('click', () => renderStageSelectLevels(1));
+    document.getElementById('tabAct2').addEventListener('click', () => renderStageSelectLevels(2));
+    document.getElementById('tabAct3').addEventListener('click', () => renderStageSelectLevels(3));
+
+    // Debug Toggles
+    document.getElementById('btnToggleHitboxes').addEventListener('click', () => {
+      debugHitboxes = !debugHitboxes;
+      const ind = document.getElementById('hitboxIndicator');
+      ind.className = `w-2 h-2 rounded-full ${debugHitboxes ? 'bg-emerald-400' : 'bg-slate-500'}`;
+    });
+
+    document.getElementById('btnToggleSound').addEventListener('click', () => {
+      audio.enabled = !audio.enabled;
+      document.getElementById('soundIcon').textContent = audio.enabled ? '🔊' : '🔇';
+      document.getElementById('soundLabel').textContent = audio.enabled ? 'Audio: ON' : 'Audio: OFF';
+    });
+
+    document.getElementById('btnResetProgress').addEventListener('click', () => {
+      if (confirm('Reset all campaign stars and progress?')) {
+        localStorage.removeItem('shinobi_campaign_stars');
+        levelProgress = {};
+        loadLevel(0);
+      }
+    });
+
+    // Real-time Phone clock
+    setInterval(() => {
+      const now = new Date();
+      const hrs = now.getHours();
+      const mins = String(now.getMinutes()).padStart(2, '0');
+      document.getElementById('clockDisplay').textContent = `${hrs}:${mins}`;
+    }, 1000);
+
+    // Start on Level 1-1
+    loadLevel(0);
+    requestAnimationFrame(gameLoop);
+  </script>
+</body>
+</html>
